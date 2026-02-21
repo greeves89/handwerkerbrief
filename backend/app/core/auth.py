@@ -8,17 +8,17 @@ from app.core.security import decode_token
 
 
 async def get_current_user(
-    access_token: Optional[str] = Cookie(None),
+    hb_access_token: Optional[str] = Cookie(None),
     db: AsyncSession = Depends(get_db),
 ) -> User:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Nicht autorisiert",
     )
-    if not access_token:
+    if not hb_access_token:
         raise credentials_exception
 
-    payload = decode_token(access_token)
+    payload = decode_token(hb_access_token)
     if not payload or payload.get("type") != "access":
         raise credentials_exception
 

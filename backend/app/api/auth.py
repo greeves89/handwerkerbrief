@@ -72,13 +72,13 @@ async def login(
 @router.post("/refresh")
 async def refresh_token(
     response: Response,
-    refresh_token: Optional[str] = Cookie(None),
+    hb_refresh_token: Optional[str] = Cookie(None),
     db: AsyncSession = Depends(get_db),
 ):
-    if not refresh_token:
+    if not hb_refresh_token:
         raise HTTPException(status_code=401, detail="Kein Refresh-Token")
 
-    payload = decode_token(refresh_token)
+    payload = decode_token(hb_refresh_token)
     if not payload or payload.get("type") != "refresh":
         raise HTTPException(status_code=401, detail="Ungültiger Refresh-Token")
 
