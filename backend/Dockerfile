@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y \
 COPY . .
 
 # Install Python dependencies
-RUN pip install --no-cache-dir -e .
+RUN pip install --no-cache-dir .
 
 # Create uploads directory
 RUN mkdir -p /app/uploads/logos /app/uploads/pdfs
