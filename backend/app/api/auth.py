@@ -98,14 +98,14 @@ async def refresh_token(
 
 @router.post("/logout")
 async def logout(response: Response):
-    response.delete_cookie("access_token")
-    response.delete_cookie("refresh_token")
+    response.delete_cookie("hb_access_token")
+    response.delete_cookie("hb_refresh_token")
     return {"message": "Erfolgreich abgemeldet"}
 
 
 def _set_cookies(response: Response, access_token: str, refresh_token: str):
     response.set_cookie(
-        "access_token",
+        "hb_access_token",
         access_token,
         httponly=True,
         secure=False,  # Set to True in production with HTTPS
@@ -113,7 +113,7 @@ def _set_cookies(response: Response, access_token: str, refresh_token: str):
         max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
     )
     response.set_cookie(
-        "refresh_token",
+        "hb_refresh_token",
         refresh_token,
         httponly=True,
         secure=False,
