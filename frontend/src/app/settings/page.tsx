@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Save, Upload, Trash2, Download } from "lucide-react";
+import { Save, Upload, Trash2, Download, Crown, Check, Loader2, X } from "lucide-react";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { AuthGuard } from "@/components/auth/auth-guard";
@@ -17,6 +17,8 @@ export default function SettingsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [activeTab, setActiveTab] = useState<"profile" | "company" | "banking" | "documents" | "account">("profile");
+  const [upgrading, setUpgrading] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
 
   useEffect(() => {
     if (user) setForm(user);
@@ -70,6 +72,33 @@ export default function SettingsPage() {
     a.click();
   };
 
+  const handleUpgrade = async () => {
+    setUpgrading(true);
+    setMessage("");
+    try {
+      const res = await api.post("/stripe/create-checkout-session");
+      const { checkout_url } = res.data;
+      window.location.href = checkout_url;
+    } catch (err: any) {
+      setMessage(err.response?.data?.detail || "Fehler beim Starten des Checkout");
+      setUpgrading(false);
+    }
+  };
+
+  const handleCancelSubscription = async () => {
+    if (!confirm("Abonnement wirklich kündigen? Es bleibt bis zum Ende der Laufzeit aktiv.")) return;
+    setCancelling(true);
+    setMessage("");
+    try {
+      await api.post("/stripe/cancel-subscription");
+      setMessage("Abonnement wird am Ende der Laufzeit gekündigt.");
+    } catch (err: any) {
+      setMessage(err.response?.data?.detail || "Fehler beim Kündigen");
+    } finally {
+      setCancelling(false);
+    }
+  };
+
   const tabs = [
     { id: "profile", label: "Profil" },
     { id: "company", label: "Unternehmen" },
@@ -90,6 +119,8 @@ export default function SettingsPage() {
       />
     </div>
   );
+
+  const isPremium = user?.subscription_tier === "premium";
 
   return (
     <AuthGuard>
@@ -209,26 +240,72 @@ export default function SettingsPage() {
 
               {activeTab === "account" && (
                 <div className="space-y-6">
-                  {/* Subscription info */}
+                  {/* Subscription */}
                   <div>
                     <h3 className="text-sm font-semibold text-foreground mb-4">Abonnement</h3>
-                    <div className="p-4 bg-secondary/50 rounded-lg">
+                    <div className="p-4 bg-secondary/50 rounded-lg mb-4">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="font-medium text-foreground">
-                            {user?.subscription_tier === "premium" ? "Premium" : "Kostenlos"}
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-0.5">
-                            {user?.subscription_tier === "free"
-                              ? "3 Rechnungen + 3 Angebote pro Monat"
-                              : "Unbegrenzte Rechnungen und Angebote"}
+                          <div className="flex items-center gap-2 mb-1">
+                            <p className="font-medium text-foreground">
+                              {isPremium ? "Premium" : "Kostenlos"}
+                            </p>
+                            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${isPremium ? 'bg-warning/20 text-warning' : 'bg-secondary text-muted-foreground'}`}>
+                              {isPremium ? "Aktiv" : "Free"}
+                            </span>
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            {isPremium
+                              ? "Unbegrenzte Rechnungen und Angebote"
+                              : "3 Rechnungen + 3 Angebote pro Monat"}
                           </p>
                         </div>
-                        {user?.subscription_tier === "free" && (
-                          <button className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90">
-                            Auf Premium upgraden
-                          </button>
-                        )}
+                        <div className="flex gap-2">
+                          {!isPremium && (
+                            <button
+                              onClick={handleUpgrade}
+                              disabled={upgrading}
+                              className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 disabled:opacity-50"
+                            >
+                              {upgrading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Crown className="w-4 h-4" />}
+                              {upgrading ? "Weiterleitung..." : "Jetzt upgraden – 0,99€/Monat"}
+                            </button>
+                          )}
+                          {isPremium && (
+                            <button
+                              onClick={handleCancelSubscription}
+                              disabled={cancelling}
+                              className="flex items-center gap-2 px-3 py-2 border border-destructive/30 rounded-lg text-sm text-destructive hover:bg-destructive/10 disabled:opacity-50"
+                            >
+                              {cancelling ? <Loader2 className="w-4 h-4 animate-spin" /> : <X className="w-4 h-4" />}
+                              {cancelling ? "Kündige..." : "Abonnement kündigen"}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Features comparison */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="p-3 rounded-lg border border-border bg-secondary/20">
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Kostenlos</p>
+                        <ul className="space-y-1.5">
+                          {["3 Rechnungen/Monat", "3 Angebote/Monat", "Kundenverwaltung", "PDF-Export"].map((f) => (
+                            <li key={f} className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <Check className="w-3 h-3 flex-shrink-0" /> {f}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div className={`p-3 rounded-lg border ${isPremium ? 'border-warning/40 bg-warning/5' : 'border-border bg-secondary/20'}`}>
+                        <p className="text-xs font-semibold text-warning uppercase tracking-wide mb-2">Premium – 0,99€/Monat</p>
+                        <ul className="space-y-1.5">
+                          {["Unbegrenzte Rechnungen", "Unbegrenzte Angebote", "DATEV-Export", "Mahnwesen", "Prioritäts-Support"].map((f) => (
+                            <li key={f} className="flex items-center gap-2 text-xs text-foreground">
+                              <Check className="w-3 h-3 text-warning flex-shrink-0" /> {f}
+                            </li>
+                          ))}
+                        </ul>
                       </div>
                     </div>
                   </div>

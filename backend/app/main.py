@@ -5,6 +5,7 @@ import os
 
 from app.config import settings
 from app.api import auth, users, customers, documents, positions, feedback, admin, gdpr
+from app.api import stripe_api
 
 app = FastAPI(
     title="HandwerkerBrief API",
@@ -33,6 +34,7 @@ app.include_router(positions.router)
 app.include_router(feedback.router)
 app.include_router(admin.router)
 app.include_router(gdpr.router)
+app.include_router(stripe_api.router)
 
 # Serve uploaded files (logos, PDFs) - in production, nginx handles this
 upload_dir = settings.UPLOAD_DIR

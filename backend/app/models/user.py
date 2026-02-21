@@ -38,6 +38,8 @@ class User(Base):
     # Subscription
     subscription_tier = Column(String(20), nullable=False, default="free")
     subscription_expires_at = Column(DateTime(timezone=True), nullable=True)
+    stripe_customer_id = Column(String(255), nullable=True)
+    stripe_subscription_id = Column(String(255), nullable=True)
 
     # Logo
     logo_path = Column(String(500), nullable=True)
