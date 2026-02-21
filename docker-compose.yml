@@ -65,7 +65,7 @@ services:
   nginx:
     build: ./nginx
     ports:
-      - "80:80"
+      - "81:80"
     volumes:
       - backend_uploads:/app/uploads:ro
     networks:
