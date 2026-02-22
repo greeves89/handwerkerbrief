@@ -9,14 +9,18 @@ from app.config import settings
 from app.api import auth, users, customers, documents, positions, feedback, admin, gdpr
 from app.api import stripe_api
 from app.api import time_entries
+from app.api import recurring_invoices
 from app.core.overdue_scheduler import overdue_scheduler_loop
+from app.core.recurring_scheduler import recurring_scheduler_loop
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    task = asyncio.create_task(overdue_scheduler_loop())
+    task1 = asyncio.create_task(overdue_scheduler_loop())
+    task2 = asyncio.create_task(recurring_scheduler_loop())
     yield
-    task.cancel()
+    task1.cancel()
+    task2.cancel()
 
 
 app = FastAPI(
@@ -49,6 +53,7 @@ app.include_router(admin.router)
 app.include_router(gdpr.router)
 app.include_router(stripe_api.router)
 app.include_router(time_entries.router)
+app.include_router(recurring_invoices.router)
 
 # Serve uploaded files (logos, PDFs) - in production, nginx handles this
 upload_dir = settings.UPLOAD_DIR
