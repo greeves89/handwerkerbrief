@@ -92,3 +92,18 @@ export const ocrApi = {
     return api.post('/ocr/scan', form, { headers: { 'Content-Type': 'multipart/form-data' } });
   },
 }
+
+export const bankApi = {
+  import: (file: File) => {
+    const form = new FormData();
+    form.append('file', file);
+    return api.post('/bank/import', form, { headers: { 'Content-Type': 'multipart/form-data' } });
+  },
+  list: (params?: { unmatched_only?: boolean; skip?: number; limit?: number }) =>
+    api.get('/bank/transactions', { params }),
+  match: (txnId: number, documentId: number | null) =>
+    api.patch(`/bank/transactions/${txnId}/match`, { document_id: documentId }),
+  ignore: (txnId: number) => api.patch(`/bank/transactions/${txnId}/ignore`),
+  stats: () => api.get('/bank/stats'),
+  openInvoices: () => api.get('/bank/open-invoices'),
+}

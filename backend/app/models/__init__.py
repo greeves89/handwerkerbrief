@@ -12,6 +12,7 @@ from app.models.recurring_invoice import RecurringInvoice
 from app.models.assignment import WorkAssignment
 from app.models.site_report import SiteReport, SiteReportPhoto
 from app.models.archive import ArchiveEntry
+from app.models.bank_transaction import BankTransaction
 
 __all__ = [
     "User",
@@ -29,4 +30,5 @@ __all__ = [
     "SiteReport",
     "SiteReportPhoto",
     "ArchiveEntry",
+    "BankTransaction",
 ]

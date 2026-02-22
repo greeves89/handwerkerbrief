@@ -16,6 +16,7 @@ from app.api import scheduling
 from app.api import site_reports
 from app.api import archive
 from app.api import tax
+from app.api import bank
 from app.core.overdue_scheduler import overdue_scheduler_loop
 from app.core.recurring_scheduler import recurring_scheduler_loop
 
@@ -66,6 +67,7 @@ app.include_router(archive.router)
 app.include_router(tax.router)
 app.include_router(portal.router)
 app.include_router(ocr.router)
+app.include_router(bank.router)
 
 # Serve uploaded files (logos, PDFs) - in production, nginx handles this
 upload_dir = settings.UPLOAD_DIR
