@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { ArrowLeft, Download, Edit, Send, Bell, Truck } from "lucide-react";
+import { ArrowLeft, Download, Edit, Send, Bell, Truck, Link2, Check } from "lucide-react";
 import Link from "next/link";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
@@ -24,6 +24,7 @@ export default function InvoiceDetailPage() {
   const [document, setDocument] = useState<Document | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showEdit, setShowEdit] = useState(false);
+  const [portalCopied, setPortalCopied] = useState(false);
 
   useEffect(() => {
     api.get(`/documents/${params.id}`).then((r) => {
@@ -58,6 +59,18 @@ export default function InvoiceDetailPage() {
       alert(`Mahnung Level ${level} wurde gesendet!`);
     } catch (err: any) {
       alert(err.response?.data?.detail || "Fehler beim Senden der Mahnung");
+    }
+  };
+
+  const handleCopyPortalLink = async () => {
+    if (!document) return;
+    try {
+      const res = await api.post(`/portal/documents/${document.id}/generate-link`);
+      await navigator.clipboard.writeText(res.data.portal_url);
+      setPortalCopied(true);
+      setTimeout(() => setPortalCopied(false), 3000);
+    } catch (err: any) {
+      alert(err.response?.data?.detail || "Fehler beim Erstellen des Portal-Links");
     }
   };
 
@@ -96,6 +109,13 @@ export default function InvoiceDetailPage() {
             subtitle="Rechnung"
             actions={
               <div className="flex gap-2">
+                <button
+                  onClick={handleCopyPortalLink}
+                  className="flex items-center gap-2 px-3 py-2 border border-border rounded-lg text-sm font-medium text-foreground hover:bg-accent"
+                >
+                  {portalCopied ? <Check className="w-4 h-4 text-green-400" /> : <Link2 className="w-4 h-4" />}
+                  {portalCopied ? "Link kopiert!" : "Kundenlink"}
+                </button>
                 <button
                   onClick={handleDownload}
                   className="flex items-center gap-2 px-3 py-2 border border-border rounded-lg text-sm font-medium text-foreground hover:bg-accent"

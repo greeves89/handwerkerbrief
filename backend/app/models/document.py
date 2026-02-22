@@ -27,6 +27,7 @@ class Document(Base):
     payment_terms = Column(String(255), nullable=True)
     notes = Column(Text, nullable=True)
     pdf_path = Column(String(500), nullable=True)
+    portal_token = Column(String(64), nullable=True, unique=True, index=True)
     converted_from_id = Column(Integer, ForeignKey("documents.id", ondelete="SET NULL"), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
