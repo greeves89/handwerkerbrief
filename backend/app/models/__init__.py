@@ -11,6 +11,7 @@ from app.models.time_entry import TimeEntry
 from app.models.recurring_invoice import RecurringInvoice
 from app.models.assignment import WorkAssignment
 from app.models.site_report import SiteReport, SiteReportPhoto
+from app.models.archive import ArchiveEntry
 
 __all__ = [
     "User",
@@ -27,4 +28,5 @@ __all__ = [
     "WorkAssignment",
     "SiteReport",
     "SiteReportPhoto",
+    "ArchiveEntry",
 ]

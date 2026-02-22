@@ -47,6 +47,24 @@ export const schedulingApi = {
   getWorkers: () => api.get('/scheduling/workers'),
 }
 
+export const archiveApi = {
+  list: (params?: { search?: string; document_type?: string; year?: number; skip?: number; limit?: number }) =>
+    api.get('/archive', { params }),
+  stats: () => api.get('/archive/stats'),
+  documentTypes: () => api.get('/archive/document-types'),
+  get: (id: number) => api.get(`/archive/${id}`),
+  upload: (file: File, meta: Record<string, string | number | undefined>) => {
+    const form = new FormData();
+    form.append('file', file);
+    Object.entries(meta).forEach(([k, v]) => {
+      if (v !== undefined && v !== null) form.append(k, String(v));
+    });
+    return api.post('/archive', form, { headers: { 'Content-Type': 'multipart/form-data' } });
+  },
+  downloadUrl: (id: number) => `${API_URL}/archive/${id}/download`,
+  verify: (id: number) => api.get(`/archive/${id}/verify`),
+}
+
 export const siteReportsApi = {
   list: () => api.get('/site-reports'),
   get: (id: number) => api.get(`/site-reports/${id}`),
