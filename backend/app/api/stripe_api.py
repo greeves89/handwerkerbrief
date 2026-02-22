@@ -75,8 +75,19 @@ async def stripe_webhook(
                 user.subscription_tier = "premium"
                 user.stripe_subscription_id = subscription_id
                 user.stripe_customer_id = session.get("customer")
-                from datetime import timedelta
-                user.subscription_expires_at = datetime.now(timezone.utc) + timedelta(days=365)
+                if subscription_id:
+                    try:
+                        stripe.api_key = settings.STRIPE_SECRET_KEY
+                        sub = stripe.Subscription.retrieve(subscription_id)
+                        period_end = sub.get("current_period_end")
+                        if period_end:
+                            user.subscription_expires_at = datetime.fromtimestamp(period_end, tz=timezone.utc)
+                        else:
+                            from datetime import timedelta
+                            user.subscription_expires_at = datetime.now(timezone.utc) + timedelta(days=365)
+                    except Exception:
+                        from datetime import timedelta
+                        user.subscription_expires_at = datetime.now(timezone.utc) + timedelta(days=365)
                 await db.commit()
 
     elif event["type"] in ["customer.subscription.deleted", "customer.subscription.paused"]:
@@ -100,6 +111,9 @@ async def stripe_webhook(
         if user:
             if status == "active":
                 user.subscription_tier = "premium"
+                period_end = subscription.get("current_period_end")
+                if period_end:
+                    user.subscription_expires_at = datetime.fromtimestamp(period_end, tz=timezone.utc)
             else:
                 user.subscription_tier = "free"
             await db.commit()
