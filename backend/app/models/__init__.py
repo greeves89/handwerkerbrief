@@ -7,6 +7,7 @@ from app.models.position import Position
 from app.models.feedback import Feedback
 from app.models.email_log import EmailLog
 from app.models.email_template import EmailTemplate
+from app.models.time_entry import TimeEntry
 
 __all__ = [
     "User",
@@ -18,4 +19,5 @@ __all__ = [
     "Feedback",
     "EmailLog",
     "EmailTemplate",
+    "TimeEntry",
 ]

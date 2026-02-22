@@ -58,3 +58,4 @@ class User(Base):
     documents = relationship("Document", back_populates="user", cascade="all, delete-orphan")
     positions = relationship("Position", back_populates="user", cascade="all, delete-orphan")
     feedback = relationship("Feedback", back_populates="user", cascade="all, delete-orphan")
+    time_entries = relationship("TimeEntry", back_populates="user", cascade="all, delete-orphan")

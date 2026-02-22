@@ -14,6 +14,7 @@ import {
   Shield,
   HardHat,
   Mail,
+  Timer,
 } from "lucide-react";
 import { useAuthStore } from "@/lib/auth";
 import { cn } from "@/lib/utils";
@@ -24,6 +25,7 @@ const navItems = [
   { href: "/offers", label: "Angebote", icon: FileText },
   { href: "/invoices", label: "Rechnungen", icon: Receipt },
   { href: "/positions", label: "Leistungen", icon: Wrench },
+  { href: "/time-entries", label: "Zeiterfassung", icon: Timer },
   { href: "/feedback", label: "Feedback", icon: MessageSquare },
   { href: "/settings", label: "Einstellungen", icon: Settings },
 ];

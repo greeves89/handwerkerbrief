@@ -8,6 +8,7 @@ import os
 from app.config import settings
 from app.api import auth, users, customers, documents, positions, feedback, admin, gdpr
 from app.api import stripe_api
+from app.api import time_entries
 from app.core.overdue_scheduler import overdue_scheduler_loop
 
 
@@ -47,6 +48,7 @@ app.include_router(feedback.router)
 app.include_router(admin.router)
 app.include_router(gdpr.router)
 app.include_router(stripe_api.router)
+app.include_router(time_entries.router)
 
 # Serve uploaded files (logos, PDFs) - in production, nginx handles this
 upload_dir = settings.UPLOAD_DIR
