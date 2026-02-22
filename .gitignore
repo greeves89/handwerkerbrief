@@ -22,6 +22,8 @@ node_modules/
 out/
 *.log
 npm-debug.log*
+next-env.d.ts
+package-lock.json
 
 # Docker volumes (local)
 postgres_data/
