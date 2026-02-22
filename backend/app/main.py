@@ -11,6 +11,7 @@ from app.api import stripe_api
 from app.api import time_entries
 from app.api import recurring_invoices
 from app.api import scheduling
+from app.api import site_reports
 from app.core.overdue_scheduler import overdue_scheduler_loop
 from app.core.recurring_scheduler import recurring_scheduler_loop
 
@@ -56,6 +57,7 @@ app.include_router(stripe_api.router)
 app.include_router(time_entries.router)
 app.include_router(recurring_invoices.router)
 app.include_router(scheduling.router)
+app.include_router(site_reports.router)
 
 # Serve uploaded files (logos, PDFs) - in production, nginx handles this
 upload_dir = settings.UPLOAD_DIR

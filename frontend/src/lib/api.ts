@@ -46,3 +46,23 @@ export const schedulingApi = {
   delete: (id: number) => api.delete(`/scheduling/${id}`),
   getWorkers: () => api.get('/scheduling/workers'),
 }
+
+export const siteReportsApi = {
+  list: () => api.get('/site-reports'),
+  get: (id: number) => api.get(`/site-reports/${id}`),
+  create: (data: Record<string, unknown>) => api.post('/site-reports', data),
+  update: (id: number, data: Record<string, unknown>) => api.patch(`/site-reports/${id}`, data),
+  delete: (id: number) => api.delete(`/site-reports/${id}`),
+  sign: (id: number, customerName: string, signature: string) =>
+    api.post(`/site-reports/${id}/sign`, { customer_name: customerName, signature }),
+  uploadPhoto: (id: number, file: File, caption?: string) => {
+    const form = new FormData();
+    form.append('file', file);
+    if (caption) form.append('caption', caption);
+    return api.post(`/site-reports/${id}/photos`, form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+  deletePhoto: (reportId: number, photoId: number) =>
+    api.delete(`/site-reports/${reportId}/photos/${photoId}`),
+}

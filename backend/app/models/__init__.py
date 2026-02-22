@@ -10,6 +10,7 @@ from app.models.email_template import EmailTemplate
 from app.models.time_entry import TimeEntry
 from app.models.recurring_invoice import RecurringInvoice
 from app.models.assignment import WorkAssignment
+from app.models.site_report import SiteReport, SiteReportPhoto
 
 __all__ = [
     "User",
@@ -24,4 +25,6 @@ __all__ = [
     "TimeEntry",
     "RecurringInvoice",
     "WorkAssignment",
+    "SiteReport",
+    "SiteReportPhoto",
 ]
