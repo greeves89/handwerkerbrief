@@ -42,6 +42,26 @@ export function useCustomers() {
     setCustomers((prev) => prev.filter((c) => c.id !== id));
   };
 
+  const importCustomersCsv = async (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    const res = await api.post("/customers/import", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    await fetchCustomers();
+    return res.data;
+  };
+
+  const downloadCustomerTemplate = async () => {
+    const res = await api.get("/customers/template/csv", { responseType: "blob" });
+    const url = URL.createObjectURL(new Blob([res.data]));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "kunden_vorlage.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return {
     customers,
     isLoading,
@@ -50,5 +70,7 @@ export function useCustomers() {
     createCustomer,
     updateCustomer,
     deleteCustomer,
+    importCustomersCsv,
+    downloadCustomerTemplate,
   };
 }

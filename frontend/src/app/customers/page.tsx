@@ -1,19 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Search, Users } from "lucide-react";
+import { Plus, Search, Users, Upload } from "lucide-react";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { AuthGuard } from "@/components/auth/auth-guard";
 import { CustomerCard } from "@/components/customers/customer-card";
 import { CustomerForm } from "@/components/customers/customer-form";
 import { InvoiceHistoryPanel } from "@/components/customers/invoice-history-panel";
+import { CsvImportDialog } from "@/components/csv-import-dialog";
 import { useCustomers } from "@/hooks/use-customers";
 import { Customer } from "@/lib/types";
 
 export default function CustomersPage() {
-  const { customers, isLoading, createCustomer, updateCustomer, deleteCustomer } = useCustomers();
+  const { customers, isLoading, createCustomer, updateCustomer, deleteCustomer, importCustomersCsv, downloadCustomerTemplate } = useCustomers();
   const [showForm, setShowForm] = useState(false);
+  const [showImport, setShowImport] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | undefined>();
   const [historyCustomer, setHistoryCustomer] = useState<Customer | undefined>();
   const [search, setSearch] = useState("");
@@ -59,13 +61,22 @@ export default function CustomersPage() {
             title="Kunden"
             subtitle={`${customers.length} Kunden insgesamt`}
             actions={
-              <button
-                onClick={() => { setEditingCustomer(undefined); setShowForm(true); }}
-                className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
-              >
-                <Plus className="w-4 h-4" />
-                Neuer Kunde
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowImport(true)}
+                  className="flex items-center gap-2 px-4 py-2 border border-border text-foreground rounded-lg text-sm font-medium hover:bg-secondary transition-colors"
+                >
+                  <Upload className="w-4 h-4" />
+                  CSV-Import
+                </button>
+                <button
+                  onClick={() => { setEditingCustomer(undefined); setShowForm(true); }}
+                  className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  Neuer Kunde
+                </button>
+              </div>
             }
           />
           <main className="flex-1 overflow-y-auto p-6">
@@ -131,6 +142,17 @@ export default function CustomersPage() {
         <InvoiceHistoryPanel
           customer={historyCustomer}
           onClose={() => setHistoryCustomer(undefined)}
+        />
+      )}
+
+      {showImport && (
+        <CsvImportDialog
+          title="Kunden importieren"
+          description="Importieren Sie Kunden aus einer CSV-Datei. Laden Sie zuerst die Vorlage herunter, um das korrekte Format zu sehen."
+          templateFilename="kunden_vorlage.csv"
+          onClose={() => setShowImport(false)}
+          onImport={importCustomersCsv}
+          onDownloadTemplate={downloadCustomerTemplate}
         />
       )}
     </AuthGuard>
