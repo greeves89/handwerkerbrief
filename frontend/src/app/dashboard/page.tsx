@@ -14,6 +14,8 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { AuthGuard } from "@/components/auth/auth-guard";
 import { StatsCard } from "@/components/dashboard/stats-card";
+import { RevenueChart } from "@/components/dashboard/revenue-chart";
+import { StatusChart } from "@/components/dashboard/status-chart";
 import { DocumentList } from "@/components/documents/document-list";
 import { useAuthStore } from "@/lib/auth";
 import api from "@/lib/api";
@@ -24,6 +26,8 @@ export default function DashboardPage() {
   const { user } = useAuthStore();
   const [recentDocs, setRecentDocs] = useState<Document[]>([]);
   const [overdueDocs, setOverdueDocs] = useState<Document[]>([]);
+  const [monthlyRevenue, setMonthlyRevenue] = useState<Array<{ month: string; paid: number; open: number }>>([]);
+  const [statusCounts, setStatusCounts] = useState({ draft: 0, sent: 0, paid: 0, overdue: 0, cancelled: 0 });
   const [stats, setStats] = useState({
     openInvoices: 0,
     openAmount: 0,
@@ -72,6 +76,40 @@ export default function DashboardPage() {
         });
         setRecentDocs(docs.slice(0, 5));
         setOverdueDocs(overdue);
+
+        // Monthly revenue chart (last 6 months)
+        const monthNames = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
+        const monthly: Array<{ month: string; paid: number; open: number }> = [];
+        for (let i = 5; i >= 0; i--) {
+          const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+          monthly.push({ month: monthNames[d.getMonth()], paid: 0, open: 0 });
+        }
+        for (const doc of docs) {
+          if (doc.type !== "invoice") continue;
+          const docDate = new Date(doc.issue_date || doc.created_at);
+          const mIdx = monthly.findIndex((m, idx) => {
+            const targetDate = new Date(now.getFullYear(), now.getMonth() - (5 - idx), 1);
+            return targetDate.getFullYear() === docDate.getFullYear() && targetDate.getMonth() === docDate.getMonth();
+          });
+          if (mIdx === -1) continue;
+          const amount = Number(doc.total_amount);
+          if (doc.status === "paid") monthly[mIdx].paid += amount;
+          else if (doc.status !== "cancelled") monthly[mIdx].open += amount;
+        }
+        setMonthlyRevenue(monthly);
+
+        // Status counts
+        const counts = { draft: 0, sent: 0, paid: 0, overdue: 0, cancelled: 0 };
+        for (const doc of docs) {
+          if (doc.type !== "invoice") continue;
+          const isOverdueDoc = doc.status !== "paid" && doc.status !== "cancelled" && doc.due_date && new Date(doc.due_date) < now;
+          if (isOverdueDoc) counts.overdue++;
+          else if (doc.status === "draft") counts.draft++;
+          else if (doc.status === "sent") counts.sent++;
+          else if (doc.status === "paid") counts.paid++;
+          else if (doc.status === "cancelled") counts.cancelled++;
+        }
+        setStatusCounts(counts);
       } catch (err) {
         console.error(err);
       } finally {
@@ -161,6 +199,34 @@ export default function DashboardPage() {
                 color="info"
                 index={3}
               />
+            </div>
+
+            {/* Charts row */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-card border border-border rounded-xl p-5">
+                <h2 className="text-sm font-semibold text-foreground mb-4">Umsatz der letzten 6 Monate</h2>
+                {isLoading ? (
+                  <div className="h-40 rounded-lg bg-secondary/30 animate-pulse" />
+                ) : (
+                  <RevenueChart data={monthlyRevenue} />
+                )}
+              </div>
+              <div className="bg-card border border-border rounded-xl p-5">
+                <h2 className="text-sm font-semibold text-foreground mb-4">Rechnungen nach Status</h2>
+                {isLoading ? (
+                  <div className="h-32 rounded-lg bg-secondary/30 animate-pulse" />
+                ) : (
+                  <StatusChart
+                    slices={[
+                      { label: "Bezahlt", value: statusCounts.paid, color: "#10b981" },
+                      { label: "Versendet", value: statusCounts.sent, color: "#3b82f6" },
+                      { label: "Entwurf", value: statusCounts.draft, color: "#6b7280" },
+                      { label: "Überfällig", value: statusCounts.overdue, color: "#ef4444" },
+                      { label: "Storniert", value: statusCounts.cancelled, color: "#d1d5db" },
+                    ]}
+                  />
+                )}
+              </div>
             </div>
 
             {/* Recent invoices */}
