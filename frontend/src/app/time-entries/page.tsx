@@ -8,6 +8,7 @@ import { Header } from "@/components/layout/header";
 import { AuthGuard } from "@/components/auth/auth-guard";
 import api from "@/lib/api";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { toast } from '@/hooks/use-toast'
 
 interface Customer {
   id: number;
@@ -152,7 +153,7 @@ export default function TimeEntriesPage() {
       setSelectedIds(new Set());
       window.location.href = `/invoices/${res.data.id}`;
     } catch {
-      alert("Fehler beim Erstellen der Rechnung.");
+      toast("Fehler beim Erstellen der Rechnung.", 'error')
       setIsBilling(false);
     }
   };

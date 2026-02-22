@@ -10,6 +10,7 @@ import { AuthGuard } from "@/components/auth/auth-guard";
 import { DocumentForm } from "@/components/documents/document-form";
 import api from "@/lib/api";
 import { Document } from "@/lib/types";
+import { toast } from '@/hooks/use-toast'
 import {
   formatCurrency,
   formatDate,
@@ -48,7 +49,7 @@ export default function InvoiceDetailPage() {
     if (!document) return;
     if (confirm("Lieferschein aus dieser Rechnung erstellen?")) {
       const res = await api.post(`/documents/${document.id}/convert-to-delivery-note`);
-      alert(`Lieferschein ${res.data.document_number} wurde erstellt.`);
+      toast(`Lieferschein ${res.data.document_number} wurde erstellt.`, 'success')
     }
   };
 
@@ -56,9 +57,9 @@ export default function InvoiceDetailPage() {
     if (!document) return;
     try {
       await api.post(`/documents/${document.id}/send-reminder`, { level });
-      alert(`Mahnung Level ${level} wurde gesendet!`);
+      toast(`Mahnung Level ${level} wurde gesendet!`, 'success')
     } catch (err: any) {
-      alert(err.response?.data?.detail || "Fehler beim Senden der Mahnung");
+      toast(err.response?.data?.detail || "Fehler beim Senden der Mahnung", 'error')
     }
   };
 
@@ -66,11 +67,23 @@ export default function InvoiceDetailPage() {
     if (!document) return;
     try {
       const res = await api.post(`/portal/documents/${document.id}/generate-link`);
-      await navigator.clipboard.writeText(res.data.portal_url);
+      const url = res.data.portal_url;
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(url);
+      } else {
+        const el = window.document.createElement('textarea');
+        el.value = url;
+        el.style.position = 'fixed';
+        el.style.opacity = '0';
+        window.document.body.appendChild(el);
+        el.select();
+        window.document.execCommand('copy');
+        window.document.body.removeChild(el);
+      }
       setPortalCopied(true);
       setTimeout(() => setPortalCopied(false), 3000);
     } catch (err: any) {
-      alert(err.response?.data?.detail || "Fehler beim Erstellen des Portal-Links");
+      toast(err.response?.data?.detail || "Fehler beim Erstellen des Portal-Links", 'error')
     }
   };
 

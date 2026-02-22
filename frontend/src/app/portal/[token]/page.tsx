@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { Download, FileText, Loader2, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { toast } from '@/hooks/use-toast'
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "/api";
 
@@ -112,7 +113,7 @@ export default function PortalPage() {
       a.click();
       URL.revokeObjectURL(url);
     } catch (err: any) {
-      alert(err.message || "Fehler beim Herunterladen");
+      toast(err.message || "Fehler beim Herunterladen", 'error')
     } finally {
       setIsDownloading(false);
     }

@@ -4,6 +4,7 @@ import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import CookieConsent from "@/components/cookie-consent";
+import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
   title: "HandwerkerBrief - Rechnungen & Angebote",
@@ -21,6 +22,7 @@ export default function RootLayout({
         <ThemeProvider defaultTheme="dark">
           {children}
           <CookieConsent />
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>
