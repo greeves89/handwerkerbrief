@@ -6,6 +6,7 @@ from app.models.payment_reminder import PaymentReminder
 from app.models.position import Position
 from app.models.feedback import Feedback
 from app.models.email_log import EmailLog
+from app.models.email_template import EmailTemplate
 
 __all__ = [
     "User",
@@ -16,4 +17,5 @@ __all__ = [
     "Position",
     "Feedback",
     "EmailLog",
+    "EmailTemplate",
 ]

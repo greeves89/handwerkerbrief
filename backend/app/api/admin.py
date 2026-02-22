@@ -208,3 +208,128 @@ async def test_smtp(
         return {"message": f"Test-E-Mail gesendet an {recipient}"}
     else:
         raise HTTPException(status_code=500, detail="SMTP-Konfiguration fehlerhaft")
+
+
+# ─────────────────────────────────────────────
+# Email Templates
+# ─────────────────────────────────────────────
+from pydantic import BaseModel
+from app.models.email_template import EmailTemplate
+
+
+class EmailTemplateResponse(BaseModel):
+    id: int
+    type: str
+    name: str
+    subject: str
+    body_html: str
+
+    class Config:
+        from_attributes = True
+
+
+class EmailTemplateUpdate(BaseModel):
+    subject: str
+    body_html: str
+
+
+@router.get("/email-templates", response_model=List[EmailTemplateResponse])
+async def list_email_templates(
+    db: AsyncSession = Depends(get_db),
+    admin: User = Depends(get_current_admin),
+):
+    result = await db.execute(select(EmailTemplate).order_by(EmailTemplate.type))
+    return result.scalars().all()
+
+
+@router.get("/email-templates/{template_type}", response_model=EmailTemplateResponse)
+async def get_email_template(
+    template_type: str,
+    db: AsyncSession = Depends(get_db),
+    admin: User = Depends(get_current_admin),
+):
+    result = await db.execute(select(EmailTemplate).where(EmailTemplate.type == template_type))
+    tmpl = result.scalar_one_or_none()
+    if not tmpl:
+        raise HTTPException(status_code=404, detail="Template nicht gefunden")
+    return tmpl
+
+
+@router.put("/email-templates/{template_type}", response_model=EmailTemplateResponse)
+async def update_email_template(
+    template_type: str,
+    data: EmailTemplateUpdate,
+    db: AsyncSession = Depends(get_db),
+    admin: User = Depends(get_current_admin),
+):
+    result = await db.execute(select(EmailTemplate).where(EmailTemplate.type == template_type))
+    tmpl = result.scalar_one_or_none()
+    if not tmpl:
+        raise HTTPException(status_code=404, detail="Template nicht gefunden")
+
+    tmpl.subject = data.subject
+    tmpl.body_html = data.body_html
+    await db.commit()
+    await db.refresh(tmpl)
+    return tmpl
+
+
+@router.post("/email-templates/{template_type}/reset", response_model=EmailTemplateResponse)
+async def reset_email_template(
+    template_type: str,
+    db: AsyncSession = Depends(get_db),
+    admin: User = Depends(get_current_admin),
+):
+    """Reset a template to its default content."""
+    defaults = {
+        "reminder_level_1": {
+            "subject": "Zahlungserinnerung: Rechnung {{invoice_number}} – {{company_name}}",
+            "body_html": """<p>Sehr geehrte/r <strong>{{customer_name}}</strong>,</p>
+<p>wir möchten Sie freundlich darauf hinweisen, dass folgende Rechnung noch nicht beglichen wurde:</p>
+<ul>
+  <li><strong>Rechnungsnummer:</strong> {{invoice_number}}</li>
+  <li><strong>Offener Betrag:</strong> {{amount}} €</li>
+  <li><strong>Fälligkeitsdatum:</strong> {{due_date}}</li>
+</ul>
+<p>Bitte überweisen Sie den ausstehenden Betrag umgehend auf unser Konto. Falls Sie bereits gezahlt haben, bitten wir Sie, diese E-Mail zu ignorieren.</p>
+<p>Mit freundlichen Grüßen,<br><strong>{{company_name}}</strong></p>""",
+        },
+        "reminder_level_2": {
+            "subject": "1. Mahnung: Rechnung {{invoice_number}} – {{company_name}}",
+            "body_html": """<p>Sehr geehrte/r <strong>{{customer_name}}</strong>,</p>
+<p>leider haben wir bis heute keinen Zahlungseingang für folgende Rechnung feststellen können:</p>
+<ul>
+  <li><strong>Rechnungsnummer:</strong> {{invoice_number}}</li>
+  <li><strong>Offener Betrag:</strong> {{amount}} €</li>
+  <li><strong>Fälligkeitsdatum:</strong> {{due_date}}</li>
+</ul>
+<p>Wir bitten Sie, den ausstehenden Betrag unverzüglich zu begleichen, um weitere Mahngebühren zu vermeiden.</p>
+<p>Mit freundlichen Grüßen,<br><strong>{{company_name}}</strong></p>""",
+        },
+        "reminder_level_3": {
+            "subject": "2. Mahnung – Letzte Aufforderung: Rechnung {{invoice_number}} – {{company_name}}",
+            "body_html": """<p>Sehr geehrte/r <strong>{{customer_name}}</strong>,</p>
+<p>trotz unserer bisherigen Mahnungen ist der folgende Betrag noch immer offen:</p>
+<ul>
+  <li><strong>Rechnungsnummer:</strong> {{invoice_number}}</li>
+  <li><strong>Offener Betrag:</strong> {{amount}} €</li>
+  <li><strong>Fälligkeitsdatum:</strong> {{due_date}}</li>
+</ul>
+<p>Dies ist unsere letzte Zahlungsaufforderung. Falls wir innerhalb von 7 Tagen keine Zahlung erhalten, sind wir gezwungen, rechtliche Schritte einzuleiten.</p>
+<p>Mit freundlichen Grüßen,<br><strong>{{company_name}}</strong></p>""",
+        },
+    }
+
+    if template_type not in defaults:
+        raise HTTPException(status_code=400, detail="Kein Standard-Template verfügbar")
+
+    result = await db.execute(select(EmailTemplate).where(EmailTemplate.type == template_type))
+    tmpl = result.scalar_one_or_none()
+    if not tmpl:
+        raise HTTPException(status_code=404, detail="Template nicht gefunden")
+
+    tmpl.subject = defaults[template_type]["subject"]
+    tmpl.body_html = defaults[template_type]["body_html"]
+    await db.commit()
+    await db.refresh(tmpl)
+    return tmpl

@@ -13,6 +13,7 @@ import {
   Settings,
   Shield,
   HardHat,
+  Mail,
 } from "lucide-react";
 import { useAuthStore } from "@/lib/auth";
 import { cn } from "@/lib/utils";
@@ -29,6 +30,7 @@ const navItems = [
 
 const adminItems = [
   { href: "/admin", label: "Admin", icon: Shield },
+  { href: "/admin/email-templates", label: "E-Mail Templates", icon: Mail },
 ];
 
 export function Sidebar() {

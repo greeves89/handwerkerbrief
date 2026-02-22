@@ -426,6 +426,12 @@ async def send_payment_reminder(
     customer_name = customer.company_name or f"{customer.first_name} {customer.last_name}"
     due_date_str = doc.due_date.strftime("%d.%m.%Y") if doc.due_date else "sofort"
 
+    # Fetch custom email template from DB if available
+    from app.models.email_template import EmailTemplate
+    template_type = f"reminder_level_{level}"
+    tmpl_result = await db.execute(select(EmailTemplate).where(EmailTemplate.type == template_type))
+    db_template = tmpl_result.scalar_one_or_none()
+
     await send_reminder_email(
         recipient=customer.email,
         customer_name=customer_name,
@@ -434,6 +440,8 @@ async def send_payment_reminder(
         due_date=due_date_str,
         level=level,
         company_name=company_name,
+        subject_template=db_template.subject if db_template else None,
+        body_template=db_template.body_html if db_template else None,
     )
 
     await db.commit()

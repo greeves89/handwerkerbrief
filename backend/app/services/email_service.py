@@ -278,6 +278,8 @@ async def send_payment_reminder(
     due_date: str,
     level: int,
     company_name: str,
+    subject_template: str | None = None,
+    body_template: str | None = None,
 ) -> bool:
     level_texts = {
         1: ("Zahlungserinnerung", "freundlich darauf hinweisen"),
@@ -343,8 +345,36 @@ async def send_payment_reminder(
   Bei Fragen wenden Sie sich bitte direkt an <strong>{company_name}</strong>.
 </p>"""
 
-    html = _email_wrapper(content, app_name=company_name, tagline=level_subject)
-    subject = f"{level_subject}: Rechnung {invoice_number} – {company_name}"
+    if body_template:
+        # Use custom DB template - replace placeholders
+        placeholders = {
+            "{{customer_name}}": customer_name,
+            "{{invoice_number}}": invoice_number,
+            "{{amount}}": f"{amount:.2f}",
+            "{{due_date}}": due_date,
+            "{{company_name}}": company_name,
+        }
+        custom_body = body_template
+        for key, val in placeholders.items():
+            custom_body = custom_body.replace(key, val)
+        html = _email_wrapper(custom_body, app_name=company_name, tagline=level_subject)
+    else:
+        html = _email_wrapper(content, app_name=company_name, tagline=level_subject)
+
+    if subject_template:
+        placeholders = {
+            "{{customer_name}}": customer_name,
+            "{{invoice_number}}": invoice_number,
+            "{{amount}}": f"{amount:.2f}",
+            "{{due_date}}": due_date,
+            "{{company_name}}": company_name,
+        }
+        subject = subject_template
+        for key, val in placeholders.items():
+            subject = subject.replace(key, val)
+    else:
+        subject = f"{level_subject}: Rechnung {invoice_number} – {company_name}"
+
     return await send_email(recipient, subject, html)
 
 
