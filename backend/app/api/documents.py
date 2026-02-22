@@ -453,6 +453,74 @@ async def convert_to_order_confirmation(
     return result.scalar_one()
 
 
+@router.post("/{document_id}/convert-to-delivery-note", response_model=DocumentResponse)
+async def convert_to_delivery_note(
+    document_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    result = await db.execute(
+        select(Document)
+        .options(selectinload(Document.items))
+        .where(
+            Document.id == document_id,
+            Document.user_id == current_user.id,
+            Document.type.in_(["invoice", "order_confirmation"]),
+        )
+    )
+    source = result.scalar_one_or_none()
+    if not source:
+        raise HTTPException(status_code=404, detail="Rechnung oder Auftragsbestätigung nicht gefunden")
+
+    counter = current_user.offer_counter
+    doc_number = f"LS-{counter:04d}"
+    current_user.offer_counter = counter + 1
+
+    delivery = Document(
+        user_id=current_user.id,
+        customer_id=source.customer_id,
+        type="delivery_note",
+        document_number=doc_number,
+        status="draft",
+        title=source.title,
+        intro_text=source.intro_text,
+        closing_text=source.closing_text,
+        issue_date=date.today(),
+        discount_percent=Decimal("0"),
+        tax_rate=Decimal("0"),
+        subtotal=Decimal("0"),
+        tax_amount=Decimal("0"),
+        total_amount=Decimal("0"),
+        notes=source.notes,
+        converted_from_id=source.id,
+    )
+    db.add(delivery)
+    await db.flush()
+
+    for item in source.items:
+        new_item = DocumentItem(
+            document_id=delivery.id,
+            position=item.position,
+            name=item.name,
+            description=item.description,
+            quantity=item.quantity,
+            unit=item.unit,
+            price_per_unit=Decimal("0"),
+            total_price=Decimal("0"),
+        )
+        db.add(new_item)
+
+    await db.commit()
+    await db.refresh(delivery)
+
+    result = await db.execute(
+        select(Document)
+        .options(selectinload(Document.items), selectinload(Document.customer))
+        .where(Document.id == delivery.id)
+    )
+    return result.scalar_one()
+
+
 @router.post("/{document_id}/send-reminder")
 async def send_payment_reminder(
     document_id: int,

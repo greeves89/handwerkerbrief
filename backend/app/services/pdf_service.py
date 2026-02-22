@@ -140,6 +140,8 @@ async def generate_pdf(document, user, customer) -> str:
         doc_type_text = "RECHNUNG"
     elif document.type == "order_confirmation":
         doc_type_text = "AUFTRAGSBESTÄTIGUNG"
+    elif document.type == "delivery_note":
+        doc_type_text = "LIEFERSCHEIN"
     else:
         doc_type_text = "ANGEBOT"
     story.append(Paragraph(doc_type_text, style_heading))
@@ -150,6 +152,8 @@ async def generate_pdf(document, user, customer) -> str:
         num_label = "Rechnungsnummer:"
     elif document.type == "order_confirmation":
         num_label = "Auftragsnummer:"
+    elif document.type == "delivery_note":
+        num_label = "Lieferscheinnummer:"
     else:
         num_label = "Angebotsnummer:"
     meta_rows = [
@@ -180,24 +184,30 @@ async def generate_pdf(document, user, customer) -> str:
         story.append(Paragraph(document.intro_text, style_normal))
         story.append(Spacer(1, 6*mm))
 
-    # Line items table
-    item_headers = ["Pos.", "Bezeichnung", "Menge", "Einheit", "Einzelpreis", "Gesamt"]
+    # Line items table — delivery notes show only positions/quantities, no prices
+    is_delivery = document.type == "delivery_note"
+    if is_delivery:
+        item_headers = ["Pos.", "Bezeichnung", "Menge", "Einheit"]
+    else:
+        item_headers = ["Pos.", "Bezeichnung", "Menge", "Einheit", "Einzelpreis", "Gesamt"]
     item_data = [item_headers]
 
+    qty_str = lambda q: str(float(q)).rstrip("0").rstrip(".") if "." in str(float(q)) else str(int(float(q)))
     for item in document.items:
-        item_data.append([
+        row = [
             str(item.position),
             Paragraph(f"<b>{item.name}</b>" + (f"<br/><font size=8 color='#64748b'>{item.description}</font>" if item.description else ""), style_normal),
-            str(float(item.quantity)).rstrip("0").rstrip(".") if "." in str(float(item.quantity)) else str(int(float(item.quantity))),
+            qty_str(item.quantity),
             item.unit or "Stück",
-            format_currency(item.price_per_unit),
-            format_currency(item.total_price),
-        ])
+        ]
+        if not is_delivery:
+            row += [format_currency(item.price_per_unit), format_currency(item.total_price)]
+        item_data.append(row)
 
-    items_table = Table(
-        item_data,
-        colWidths=[12*mm, 75*mm, 17*mm, 17*mm, 27*mm, 22*mm],
-    )
+    if is_delivery:
+        items_table = Table(item_data, colWidths=[12*mm, 113*mm, 17*mm, 28*mm])
+    else:
+        items_table = Table(item_data, colWidths=[12*mm, 75*mm, 17*mm, 17*mm, 27*mm, 22*mm])
     items_table.setStyle(TableStyle([
         ("BACKGROUND", (0, 0), (-1, 0), primary_color),
         ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
@@ -216,29 +226,32 @@ async def generate_pdf(document, user, customer) -> str:
     story.append(items_table)
     story.append(Spacer(1, 6*mm))
 
-    # Totals
-    discount_amount = float(document.subtotal) * float(document.discount_percent) / 100 if document.discount_percent else 0
-    totals_rows = []
-    totals_rows.append(["Zwischensumme (netto):", format_currency(document.subtotal)])
-    if discount_amount > 0:
-        totals_rows.append([f"Rabatt ({document.discount_percent}%):", f"-{format_currency(discount_amount)}"])
-    totals_rows.append([f"MwSt. ({document.tax_rate}%):", format_currency(document.tax_amount)])
-    totals_rows.append(["Gesamtbetrag (brutto):", format_currency(document.total_amount)])
+    # Totals — skip for delivery notes
+    if is_delivery:
+        pass
+    else:
+        discount_amount = float(document.subtotal) * float(document.discount_percent) / 100 if document.discount_percent else 0
+        totals_rows = []
+        totals_rows.append(["Zwischensumme (netto):", format_currency(document.subtotal)])
+        if discount_amount > 0:
+            totals_rows.append([f"Rabatt ({document.discount_percent}%):", f"-{format_currency(discount_amount)}"])
+        totals_rows.append([f"MwSt. ({document.tax_rate}%):", format_currency(document.tax_amount)])
+        totals_rows.append(["Gesamtbetrag (brutto):", format_currency(document.total_amount)])
 
-    totals_table = Table(totals_rows, colWidths=[120*mm, 30*mm])
-    style_list = [
-        ("FONTSIZE", (0, 0), (-1, -1), 9),
-        ("ALIGN", (0, 0), (-1, -1), "RIGHT"),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
-        ("TOPPADDING", (0, 0), (-1, -1), 4),
-        ("LINEABOVE", (0, -1), (-1, -1), 1, primary_color),
-        ("FONTNAME", (0, -1), (-1, -1), "Helvetica-Bold"),
-        ("TEXTCOLOR", (0, -1), (-1, -1), primary_color),
-        ("FONTSIZE", (0, -1), (-1, -1), 11),
-    ]
-    totals_table.setStyle(TableStyle(style_list))
-    story.append(totals_table)
-    story.append(Spacer(1, 8*mm))
+        totals_table = Table(totals_rows, colWidths=[120*mm, 30*mm])
+        style_list = [
+            ("FONTSIZE", (0, 0), (-1, -1), 9),
+            ("ALIGN", (0, 0), (-1, -1), "RIGHT"),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+            ("TOPPADDING", (0, 0), (-1, -1), 4),
+            ("LINEABOVE", (0, -1), (-1, -1), 1, primary_color),
+            ("FONTNAME", (0, -1), (-1, -1), "Helvetica-Bold"),
+            ("TEXTCOLOR", (0, -1), (-1, -1), primary_color),
+            ("FONTSIZE", (0, -1), (-1, -1), 11),
+        ]
+        totals_table.setStyle(TableStyle(style_list))
+        story.append(totals_table)
+        story.append(Spacer(1, 8*mm))
 
     # Payment info
     if document.type == "invoice" and (user.iban or user.payment_terms or document.payment_terms):

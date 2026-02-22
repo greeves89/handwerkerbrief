@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { ArrowLeft, Download, Edit, Send, Bell } from "lucide-react";
+import { ArrowLeft, Download, Edit, Send, Bell, Truck } from "lucide-react";
 import Link from "next/link";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
@@ -41,6 +41,14 @@ export default function InvoiceDetailPage() {
     a.download = `${document.document_number}.pdf`;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  const handleConvertToDeliveryNote = async () => {
+    if (!document) return;
+    if (confirm("Lieferschein aus dieser Rechnung erstellen?")) {
+      const res = await api.post(`/documents/${document.id}/convert-to-delivery-note`);
+      alert(`Lieferschein ${res.data.document_number} wurde erstellt.`);
+    }
   };
 
   const handleSendReminder = async (level: number) => {
@@ -94,6 +102,13 @@ export default function InvoiceDetailPage() {
                 >
                   <Download className="w-4 h-4" />
                   PDF
+                </button>
+                <button
+                  onClick={handleConvertToDeliveryNote}
+                  className="flex items-center gap-2 px-3 py-2 border border-border rounded-lg text-sm font-medium text-foreground hover:bg-accent"
+                >
+                  <Truck className="w-4 h-4" />
+                  Lieferschein
                 </button>
                 <button
                   onClick={() => setShowEdit(true)}
