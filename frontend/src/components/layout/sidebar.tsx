@@ -19,6 +19,7 @@ import {
   UserPlus,
   Camera,
   Archive,
+  FileSpreadsheet,
 } from "lucide-react";
 import { useAuthStore } from "@/lib/auth";
 import { cn } from "@/lib/utils";
@@ -33,6 +34,7 @@ const navItems = [
   { href: "/recurring-invoices", label: "Abo-Rechnungen", icon: RefreshCw },
   { href: "/site-reports", label: "Baustellenabnahme", icon: Camera },
   { href: "/archive", label: "GoBD-Archiv", icon: Archive },
+  { href: "/tax", label: "UStVA / ELSTER", icon: FileSpreadsheet },
   { href: "/team", label: "Team", icon: UserPlus },
   { href: "/feedback", label: "Feedback", icon: MessageSquare },
   { href: "/settings", label: "Einstellungen", icon: Settings },
