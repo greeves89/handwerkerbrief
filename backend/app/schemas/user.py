@@ -32,6 +32,7 @@ class UserResponse(BaseModel):
     name: str
     role: str
     is_active: bool
+    is_verified: bool = False
     company_name: Optional[str] = None
     address_street: Optional[str] = None
     address_zip: Optional[str] = None

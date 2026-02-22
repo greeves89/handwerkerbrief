@@ -190,6 +190,45 @@ def build_welcome_email(name: str) -> tuple[str, str]:
 
 
 # ─────────────────────────────────────────────
+# Template: E-Mail verifizieren
+# ─────────────────────────────────────────────
+def build_verification_email(name: str, verify_url: str) -> tuple[str, str]:
+    content = f"""
+<div style="text-align:center;margin-bottom:24px;">
+  <div style="display:inline-block;background:#eff6ff;border-radius:50%;width:60px;height:60px;line-height:60px;font-size:26px;">✉️</div>
+</div>
+
+<h1 style="margin:0 0 6px;font-size:24px;font-weight:700;color:{TEXT};text-align:center;letter-spacing:-0.3px;">E-Mail bestätigen</h1>
+<p style="margin:0 0 28px;color:{TEXT_MUTED};font-size:13px;text-align:center;">HandwerkerBrief &middot; Kontoaktivierung</p>
+
+<p style="margin:0 0 16px;color:{TEXT};font-size:15px;line-height:1.7;">Hallo <strong>{name}</strong>,</p>
+<p style="margin:0 0 24px;color:{TEXT_MUTED};font-size:15px;line-height:1.7;">
+  vielen Dank für Ihre Registrierung bei HandwerkerBrief! Bitte bestätigen Sie Ihre E-Mail-Adresse,
+  um Ihr Konto zu aktivieren:
+</p>
+
+{_btn(verify_url, "E-Mail bestätigen →")}
+
+<div style="background:{WARNING_BG};border:1px solid {WARNING_BORDER};border-radius:10px;padding:14px 18px;margin:0 0 24px;">
+  <p style="margin:0;color:{WARNING_TEXT};font-size:13px;line-height:1.6;">
+    ⏱&nbsp; <strong>Dieser Link ist 48 Stunden gültig.</strong><br>
+    Falls Sie sich nicht registriert haben, können Sie diese E-Mail ignorieren.
+  </p>
+</div>
+
+{_divider()}
+
+<p style="margin:0;color:{TEXT_MUTED};font-size:12px;line-height:1.6;">
+  Wenn der Button nicht funktioniert, kopieren Sie diesen Link in Ihren Browser:<br>
+  <a href="{verify_url}" style="color:{PRIMARY};word-break:break-all;">{verify_url}</a>
+</p>"""
+
+    html = _email_wrapper(content)
+    text = f"Hallo {name}, bitte bestätigen Sie Ihre E-Mail: {verify_url} (gültig für 48 Stunden)."
+    return html, text
+
+
+# ─────────────────────────────────────────────
 # Template: Passwort zurücksetzen
 # ─────────────────────────────────────────────
 def build_password_reset_email(name: str, reset_url: str) -> tuple[str, str]:

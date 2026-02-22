@@ -22,6 +22,7 @@ class Settings(BaseSettings):
     # App
     UPLOAD_DIR: str = "/app/uploads"
     APP_URL: str = "http://localhost"
+    ENVIRONMENT: str = "production"
 
     # Stripe
     STRIPE_SECRET_KEY: str = ""

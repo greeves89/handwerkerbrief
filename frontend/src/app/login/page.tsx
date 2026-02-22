@@ -90,12 +90,17 @@ export default function LoginPage() {
               {isLoading ? "Anmelden..." : "Anmelden"}
             </button>
           </form>
-          <p className="text-center text-xs text-muted-foreground mt-4">
-            Noch kein Konto?{" "}
-            <Link href="/register" className="text-primary hover:underline font-medium">
-              Registrieren
+          <div className="flex flex-col items-center gap-2 mt-4">
+            <p className="text-center text-xs text-muted-foreground">
+              Noch kein Konto?{" "}
+              <Link href="/register" className="text-primary hover:underline font-medium">
+                Registrieren
+              </Link>
+            </p>
+            <Link href="/forgot-password" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+              Passwort vergessen?
             </Link>
-          </p>
+          </div>
         </div>
       </motion.div>
     </div>
