@@ -84,3 +84,11 @@ export const siteReportsApi = {
   deletePhoto: (reportId: number, photoId: number) =>
     api.delete(`/site-reports/${reportId}/photos/${photoId}`),
 }
+
+export const ocrApi = {
+  scan: (file: File) => {
+    const form = new FormData();
+    form.append('file', file);
+    return api.post('/ocr/scan', form, { headers: { 'Content-Type': 'multipart/form-data' } });
+  },
+}

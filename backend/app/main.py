@@ -9,6 +9,7 @@ from app.config import settings
 from app.api import auth, users, customers, documents, positions, feedback, admin, gdpr
 from app.api import stripe_api
 from app.api import portal
+from app.api import ocr
 from app.api import time_entries
 from app.api import recurring_invoices
 from app.api import scheduling
@@ -64,6 +65,7 @@ app.include_router(site_reports.router)
 app.include_router(archive.router)
 app.include_router(tax.router)
 app.include_router(portal.router)
+app.include_router(ocr.router)
 
 # Serve uploaded files (logos, PDFs) - in production, nginx handles this
 upload_dir = settings.UPLOAD_DIR
