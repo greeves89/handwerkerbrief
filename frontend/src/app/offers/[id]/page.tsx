@@ -53,6 +53,14 @@ export default function OfferDetailPage() {
     }
   };
 
+  const handleConvertToOrderConfirmation = async () => {
+    if (!document) return;
+    if (confirm("Angebot in Auftragsbestätigung umwandeln?")) {
+      const res = await api.post(`/documents/${document.id}/convert-to-order-confirmation`);
+      router.push(`/offers/${res.data.id}`);
+    }
+  };
+
   const handleUpdateStatus = async (status: string) => {
     if (!document) return;
     const res = await api.put(`/documents/${document.id}`, { status });
@@ -95,13 +103,22 @@ export default function OfferDetailPage() {
                   PDF
                 </button>
                 {document.status !== "accepted" && (
-                  <button
-                    onClick={handleConvert}
-                    className="flex items-center gap-2 px-3 py-2 bg-success text-white rounded-lg text-sm font-medium hover:bg-success/90"
-                  >
-                    <ArrowRight className="w-4 h-4" />
-                    In Rechnung umwandeln
-                  </button>
+                  <>
+                    <button
+                      onClick={handleConvertToOrderConfirmation}
+                      className="flex items-center gap-2 px-3 py-2 border border-border rounded-lg text-sm font-medium text-foreground hover:bg-accent"
+                    >
+                      <ArrowRight className="w-4 h-4" />
+                      In Auftragsbestätigung
+                    </button>
+                    <button
+                      onClick={handleConvert}
+                      className="flex items-center gap-2 px-3 py-2 bg-success text-white rounded-lg text-sm font-medium hover:bg-success/90"
+                    >
+                      <ArrowRight className="w-4 h-4" />
+                      In Rechnung umwandeln
+                    </button>
+                  </>
                 )}
                 <button
                   onClick={() => setShowEdit(true)}

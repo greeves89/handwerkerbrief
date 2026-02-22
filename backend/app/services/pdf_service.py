@@ -136,13 +136,24 @@ async def generate_pdf(document, user, customer) -> str:
     story.append(Spacer(1, 10*mm))
 
     # Document type header
-    doc_type_text = "RECHNUNG" if document.type == "invoice" else "ANGEBOT"
+    if document.type == "invoice":
+        doc_type_text = "RECHNUNG"
+    elif document.type == "order_confirmation":
+        doc_type_text = "AUFTRAGSBESTÄTIGUNG"
+    else:
+        doc_type_text = "ANGEBOT"
     story.append(Paragraph(doc_type_text, style_heading))
     story.append(Spacer(1, 4*mm))
 
     # Document metadata table
+    if document.type == "invoice":
+        num_label = "Rechnungsnummer:"
+    elif document.type == "order_confirmation":
+        num_label = "Auftragsnummer:"
+    else:
+        num_label = "Angebotsnummer:"
     meta_rows = [
-        [f"{'Rechnungs' if document.type == 'invoice' else 'Angebots'}nummer:", document.document_number],
+        [num_label, document.document_number],
         ["Datum:", format_date(document.issue_date)],
     ]
     if document.due_date:

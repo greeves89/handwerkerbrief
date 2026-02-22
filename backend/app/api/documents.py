@@ -386,6 +386,73 @@ async def convert_to_invoice(
     return result.scalar_one()
 
 
+@router.post("/{document_id}/convert-to-order-confirmation", response_model=DocumentResponse)
+async def convert_to_order_confirmation(
+    document_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    result = await db.execute(
+        select(Document)
+        .options(selectinload(Document.items))
+        .where(Document.id == document_id, Document.user_id == current_user.id, Document.type == "offer")
+    )
+    offer = result.scalar_one_or_none()
+    if not offer:
+        raise HTTPException(status_code=404, detail="Angebot nicht gefunden")
+
+    counter = current_user.offer_counter
+    prefix = current_user.offer_prefix or "AB-"
+    doc_number = f"AB-{counter:04d}"
+    current_user.offer_counter = counter + 1
+
+    confirmation = Document(
+        user_id=current_user.id,
+        customer_id=offer.customer_id,
+        type="order_confirmation",
+        document_number=doc_number,
+        status="draft",
+        title=offer.title,
+        intro_text=offer.intro_text,
+        closing_text=offer.closing_text,
+        issue_date=date.today(),
+        discount_percent=offer.discount_percent,
+        tax_rate=offer.tax_rate,
+        subtotal=offer.subtotal,
+        tax_amount=offer.tax_amount,
+        total_amount=offer.total_amount,
+        payment_terms=offer.payment_terms,
+        notes=offer.notes,
+        converted_from_id=offer.id,
+    )
+    db.add(confirmation)
+    await db.flush()
+
+    for item in offer.items:
+        new_item = DocumentItem(
+            document_id=confirmation.id,
+            position=item.position,
+            name=item.name,
+            description=item.description,
+            quantity=item.quantity,
+            unit=item.unit,
+            price_per_unit=item.price_per_unit,
+            total_price=item.total_price,
+        )
+        db.add(new_item)
+
+    offer.status = "accepted"
+    await db.commit()
+    await db.refresh(confirmation)
+
+    result = await db.execute(
+        select(Document)
+        .options(selectinload(Document.items), selectinload(Document.customer))
+        .where(Document.id == confirmation.id)
+    )
+    return result.scalar_one()
+
+
 @router.post("/{document_id}/send-reminder")
 async def send_payment_reminder(
     document_id: int,
