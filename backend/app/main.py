@@ -1,11 +1,22 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+import asyncio
 import os
 
 from app.config import settings
 from app.api import auth, users, customers, documents, positions, feedback, admin, gdpr
 from app.api import stripe_api
+from app.core.overdue_scheduler import overdue_scheduler_loop
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    task = asyncio.create_task(overdue_scheduler_loop())
+    yield
+    task.cancel()
+
 
 app = FastAPI(
     title="HandwerkerBrief API",
@@ -14,6 +25,7 @@ app = FastAPI(
     docs_url="/api/docs",
     redoc_url="/api/redoc",
     openapi_url="/api/openapi.json",
+    lifespan=lifespan,
 )
 
 # CORS - only needed for development; in production nginx handles this
