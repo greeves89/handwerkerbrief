@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
 import { Plus, Search, Users } from "lucide-react";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { AuthGuard } from "@/components/auth/auth-guard";
 import { CustomerCard } from "@/components/customers/customer-card";
 import { CustomerForm } from "@/components/customers/customer-form";
+import { InvoiceHistoryPanel } from "@/components/customers/invoice-history-panel";
 import { useCustomers } from "@/hooks/use-customers";
 import { Customer } from "@/lib/types";
 
@@ -15,6 +15,7 @@ export default function CustomersPage() {
   const { customers, isLoading, createCustomer, updateCustomer, deleteCustomer } = useCustomers();
   const [showForm, setShowForm] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | undefined>();
+  const [historyCustomer, setHistoryCustomer] = useState<Customer | undefined>();
   const [search, setSearch] = useState("");
 
   const filtered = customers.filter((c) => {
@@ -108,6 +109,7 @@ export default function CustomersPage() {
                     customer={customer}
                     onEdit={handleEdit}
                     onDelete={handleDelete}
+                    onViewHistory={(c) => setHistoryCustomer(c)}
                     index={index}
                   />
                 ))}
@@ -122,6 +124,13 @@ export default function CustomersPage() {
           customer={editingCustomer}
           onSave={handleSave}
           onCancel={() => { setShowForm(false); setEditingCustomer(undefined); }}
+        />
+      )}
+
+      {historyCustomer && (
+        <InvoiceHistoryPanel
+          customer={historyCustomer}
+          onClose={() => setHistoryCustomer(undefined)}
         />
       )}
     </AuthGuard>

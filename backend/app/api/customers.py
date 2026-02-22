@@ -2,10 +2,12 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from typing import List, Optional
+from datetime import date
 
 from app.database import get_db
 from app.models.user import User
 from app.models.customer import Customer
+from app.models.document import Document
 from app.schemas.customer import CustomerCreate, CustomerUpdate, CustomerResponse
 from app.core.auth import get_current_user
 
@@ -122,3 +124,72 @@ async def delete_customer(
 
     await db.delete(customer)
     await db.commit()
+
+
+@router.get("/{customer_id}/invoice-summary")
+async def get_customer_invoice_summary(
+    customer_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Returns invoice payment history and outstanding amounts for a customer."""
+    customer_result = await db.execute(
+        select(Customer).where(
+            Customer.id == customer_id,
+            Customer.user_id == current_user.id,
+        )
+    )
+    customer = customer_result.scalar_one_or_none()
+    if not customer:
+        raise HTTPException(status_code=404, detail="Kunde nicht gefunden")
+
+    docs_result = await db.execute(
+        select(Document).where(
+            Document.customer_id == customer_id,
+            Document.user_id == current_user.id,
+            Document.type == "invoice",
+        ).order_by(Document.issue_date.desc())
+    )
+    invoices = docs_result.scalars().all()
+
+    today = date.today()
+    invoice_list = []
+    total_invoiced = 0.0
+    total_paid = 0.0
+    total_outstanding = 0.0
+    total_overdue = 0.0
+
+    for inv in invoices:
+        amount = float(inv.total_amount)
+        is_paid = inv.status == "paid"
+        is_overdue = not is_paid and inv.due_date and inv.due_date < today
+        outstanding = 0.0 if is_paid else amount
+
+        total_invoiced += amount
+        if is_paid:
+            total_paid += amount
+        else:
+            total_outstanding += outstanding
+            if is_overdue:
+                total_overdue += outstanding
+
+        invoice_list.append({
+            "id": inv.id,
+            "document_number": inv.document_number,
+            "title": inv.title,
+            "status": inv.status,
+            "issue_date": str(inv.issue_date) if inv.issue_date else None,
+            "due_date": str(inv.due_date) if inv.due_date else None,
+            "total_amount": amount,
+            "is_overdue": bool(is_overdue),
+        })
+
+    return {
+        "customer_id": customer_id,
+        "invoice_count": len(invoices),
+        "total_invoiced": total_invoiced,
+        "total_paid": total_paid,
+        "total_outstanding": total_outstanding,
+        "total_overdue": total_overdue,
+        "invoices": invoice_list,
+    }

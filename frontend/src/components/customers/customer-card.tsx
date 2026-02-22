@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Building2, User, Mail, Phone, MapPin, Edit, Trash2 } from "lucide-react";
+import { Building2, User, Mail, Phone, MapPin, Edit, Trash2, Receipt } from "lucide-react";
 import { Customer } from "@/lib/types";
 import { getCustomerName } from "@/lib/utils";
 
@@ -9,10 +9,11 @@ interface CustomerCardProps {
   customer: Customer;
   onEdit: (customer: Customer) => void;
   onDelete: (id: number) => void;
+  onViewHistory?: (customer: Customer) => void;
   index?: number;
 }
 
-export function CustomerCard({ customer, onEdit, onDelete, index = 0 }: CustomerCardProps) {
+export function CustomerCard({ customer, onEdit, onDelete, onViewHistory, index = 0 }: CustomerCardProps) {
   const name = getCustomerName(customer);
   const hasCompany = !!customer.company_name;
 
@@ -40,6 +41,15 @@ export function CustomerCard({ customer, onEdit, onDelete, index = 0 }: Customer
           </div>
         </div>
         <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          {onViewHistory && (
+            <button
+              onClick={() => onViewHistory(customer)}
+              title="Rechnungshistorie"
+              className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+            >
+              <Receipt className="w-3.5 h-3.5" />
+            </button>
+          )}
           <button
             onClick={() => onEdit(customer)}
             className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"

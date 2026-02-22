@@ -116,6 +116,27 @@ export interface Feedback {
   updated_at: string;
 }
 
+export interface InvoiceSummaryItem {
+  id: number;
+  document_number: string;
+  title?: string;
+  status: string;
+  issue_date?: string;
+  due_date?: string;
+  total_amount: number;
+  is_overdue: boolean;
+}
+
+export interface CustomerInvoiceSummary {
+  customer_id: number;
+  invoice_count: number;
+  total_invoiced: number;
+  total_paid: number;
+  total_outstanding: number;
+  total_overdue: number;
+  invoices: InvoiceSummaryItem[];
+}
+
 export interface AdminStats {
   total_users: number;
   premium_users: number;
