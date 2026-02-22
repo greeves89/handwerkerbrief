@@ -16,6 +16,7 @@ import {
   Mail,
   Timer,
   RefreshCw,
+  UserPlus,
 } from "lucide-react";
 import { useAuthStore } from "@/lib/auth";
 import { cn } from "@/lib/utils";
@@ -28,6 +29,7 @@ const navItems = [
   { href: "/positions", label: "Leistungen", icon: Wrench },
   { href: "/time-entries", label: "Zeiterfassung", icon: Timer },
   { href: "/recurring-invoices", label: "Abo-Rechnungen", icon: RefreshCw },
+  { href: "/team", label: "Team", icon: UserPlus },
   { href: "/feedback", label: "Feedback", icon: MessageSquare },
   { href: "/settings", label: "Einstellungen", icon: Settings },
 ];

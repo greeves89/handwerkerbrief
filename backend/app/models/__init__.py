@@ -9,6 +9,7 @@ from app.models.email_log import EmailLog
 from app.models.email_template import EmailTemplate
 from app.models.time_entry import TimeEntry
 from app.models.recurring_invoice import RecurringInvoice
+from app.models.assignment import WorkAssignment
 
 __all__ = [
     "User",
@@ -22,4 +23,5 @@ __all__ = [
     "EmailTemplate",
     "TimeEntry",
     "RecurringInvoice",
+    "WorkAssignment",
 ]

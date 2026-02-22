@@ -30,4 +30,19 @@ api.interceptors.response.use(
   }
 );
 
+export const teamApi = {
+  listInvites: () => api.get('/team/invites'),
+  invite: (email: string, role: string) => api.post('/team/invite', { email, role }),
+  deleteInvite: (id: number) => api.delete(`/team/invites/${id}`),
+};
+
 export default api;
+
+export const schedulingApi = {
+  listWeek: (date: string) => api.get('/scheduling/week', { params: { date } }),
+  list: (dateFrom?: string, dateTo?: string) => api.get('/scheduling', { params: { date_from: dateFrom, date_to: dateTo } }),
+  create: (data: Record<string, unknown>) => api.post('/scheduling', data),
+  update: (id: number, data: Record<string, unknown>) => api.put(`/scheduling/${id}`, data),
+  delete: (id: number) => api.delete(`/scheduling/${id}`),
+  getWorkers: () => api.get('/scheduling/workers'),
+}

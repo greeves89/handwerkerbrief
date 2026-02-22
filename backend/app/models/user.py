@@ -60,3 +60,4 @@ class User(Base):
     feedback = relationship("Feedback", back_populates="user", cascade="all, delete-orphan")
     time_entries = relationship("TimeEntry", back_populates="user", cascade="all, delete-orphan")
     recurring_invoices = relationship("RecurringInvoice", back_populates="user", cascade="all, delete-orphan")
+    assignments = relationship("WorkAssignment", back_populates="user", cascade="all, delete-orphan")
