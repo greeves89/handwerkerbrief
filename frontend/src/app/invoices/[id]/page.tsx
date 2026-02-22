@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { ArrowLeft, Download, Edit, Send, Bell, Truck, Link2, Check } from "lucide-react";
 import Link from "next/link";
 import { Sidebar } from "@/components/layout/sidebar";
+import { MobileNavProvider } from "@/components/layout/mobile-nav-context";
 import { Header } from "@/components/layout/header";
 import { AuthGuard } from "@/components/auth/auth-guard";
 import { DocumentForm } from "@/components/documents/document-form";
@@ -95,14 +96,16 @@ export default function InvoiceDetailPage() {
 
   if (isLoading) {
     return (
-      <AuthGuard>
+      <MobileNavProvider>
+    <AuthGuard>
         <div className="flex h-screen bg-background">
           <Sidebar />
-          <div className="flex-1 ml-[260px] flex items-center justify-center">
+          <div className="flex-1 flex items-center justify-center">
             <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
           </div>
         </div>
       </AuthGuard>
+    </MobileNavProvider>
     );
   }
 
@@ -113,10 +116,11 @@ export default function InvoiceDetailPage() {
   const isOverdueDoc = document.status !== "paid" && document.due_date && new Date(document.due_date) < new Date();
 
   return (
+    <MobileNavProvider>
     <AuthGuard>
       <div className="flex h-screen bg-background">
         <Sidebar />
-        <div className="flex-1 ml-[260px] flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden">
           <Header
             title={document.document_number}
             subtitle="Rechnung"
@@ -311,5 +315,6 @@ export default function InvoiceDetailPage() {
         />
       )}
     </AuthGuard>
+    </MobileNavProvider>
   );
 }

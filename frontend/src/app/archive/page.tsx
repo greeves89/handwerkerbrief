@@ -21,6 +21,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { Sidebar } from "@/components/layout/sidebar";
+import { MobileNavProvider } from "@/components/layout/mobile-nav-context";
 import { Header } from "@/components/layout/header";
 import { AuthGuard } from "@/components/auth/auth-guard";
 import { archiveApi } from "@/lib/api";
@@ -377,6 +378,7 @@ export default function ArchivePage() {
     : [];
 
   return (
+    <MobileNavProvider>
     <AuthGuard>
       <div className="flex h-screen bg-background">
         <Sidebar />
@@ -391,7 +393,7 @@ export default function ArchivePage() {
           )}
         </AnimatePresence>
 
-        <div className="flex-1 ml-[260px] flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden">
           <Header
             title="GoBD-Belegarchiv"
             subtitle="Revisionssichere Archivierung gem. § 147 AO (10 Jahre)"
@@ -612,5 +614,6 @@ export default function ArchivePage() {
         </div>
       </div>
     </AuthGuard>
+    </MobileNavProvider>
   );
 }

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Plus, Timer, Edit, Trash2, X, CheckSquare, Square, FileText } from "lucide-react";
 import { Sidebar } from "@/components/layout/sidebar";
+import { MobileNavProvider } from "@/components/layout/mobile-nav-context";
 import { Header } from "@/components/layout/header";
 import { AuthGuard } from "@/components/auth/auth-guard";
 import api from "@/lib/api";
@@ -169,10 +170,11 @@ export default function TimeEntriesPage() {
   ).length;
 
   return (
+    <MobileNavProvider>
     <AuthGuard>
       <div className="flex h-screen bg-background">
         <Sidebar />
-        <div className="flex-1 ml-[260px] flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden">
           <Header
             title="Zeiterfassung"
             subtitle="Arbeitszeiten erfassen und direkt in Rechnungen umwandeln"
@@ -401,5 +403,6 @@ export default function TimeEntriesPage() {
         </div>
       )}
     </AuthGuard>
+    </MobileNavProvider>
   );
 }

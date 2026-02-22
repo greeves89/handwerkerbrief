@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Plus, Search, Users, Upload } from "lucide-react";
 import { Sidebar } from "@/components/layout/sidebar";
+import { MobileNavProvider } from "@/components/layout/mobile-nav-context";
 import { Header } from "@/components/layout/header";
 import { AuthGuard } from "@/components/auth/auth-guard";
 import { CustomerCard } from "@/components/customers/customer-card";
@@ -53,10 +54,11 @@ export default function CustomersPage() {
   };
 
   return (
+    <MobileNavProvider>
     <AuthGuard>
       <div className="flex h-screen bg-background">
         <Sidebar />
-        <div className="flex-1 ml-[260px] flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden">
           <Header
             title="Kunden"
             subtitle={`${customers.length} Kunden insgesamt`}
@@ -156,5 +158,6 @@ export default function CustomersPage() {
         />
       )}
     </AuthGuard>
+    </MobileNavProvider>
   );
 }

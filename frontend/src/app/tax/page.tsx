@@ -15,6 +15,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { Sidebar } from "@/components/layout/sidebar";
+import { MobileNavProvider } from "@/components/layout/mobile-nav-context";
 import { Header } from "@/components/layout/header";
 import { AuthGuard } from "@/components/auth/auth-guard";
 import api from "@/lib/api";
@@ -143,10 +144,11 @@ export default function TaxPage() {
     : 0;
 
   return (
+    <MobileNavProvider>
     <AuthGuard>
       <div className="flex h-screen bg-background">
         <Sidebar />
-        <div className="flex-1 ml-[260px] flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden">
           <Header
             title="Umsatzsteuervoranmeldung"
             subtitle="UStVA – ELSTER XML-Export für das Finanzportal"
@@ -468,5 +470,6 @@ export default function TaxPage() {
         </div>
       </div>
     </AuthGuard>
+    </MobileNavProvider>
   );
 }

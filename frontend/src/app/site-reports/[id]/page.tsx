@@ -20,6 +20,7 @@ import {
   Save,
 } from "lucide-react";
 import { Sidebar } from "@/components/layout/sidebar";
+import { MobileNavProvider } from "@/components/layout/mobile-nav-context";
 import { AuthGuard } from "@/components/auth/auth-guard";
 import { siteReportsApi } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -301,14 +302,16 @@ export default function SiteReportDetailPage() {
 
   if (loading) {
     return (
-      <AuthGuard>
+      <MobileNavProvider>
+    <AuthGuard>
         <div className="flex h-screen bg-background">
           <Sidebar />
-          <div className="flex-1 ml-[260px] flex items-center justify-center">
+          <div className="flex-1 flex items-center justify-center">
             <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
           </div>
         </div>
       </AuthGuard>
+    </MobileNavProvider>
     );
   }
 
@@ -317,6 +320,7 @@ export default function SiteReportDetailPage() {
   const isSigned = report.status === "signed";
 
   return (
+    <MobileNavProvider>
     <AuthGuard>
       <div className="flex h-screen bg-background">
         <Sidebar />
@@ -345,7 +349,7 @@ export default function SiteReportDetailPage() {
           )}
         </AnimatePresence>
 
-        <div className="flex-1 ml-[260px] flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden">
           {/* Top bar */}
           <div className="h-14 border-b border-border flex items-center px-6 gap-4 shrink-0">
             <button
@@ -709,5 +713,6 @@ export default function SiteReportDetailPage() {
         </div>
       </div>
     </AuthGuard>
+    </MobileNavProvider>
   );
 }

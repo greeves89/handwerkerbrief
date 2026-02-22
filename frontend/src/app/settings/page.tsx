@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Save, Upload, Trash2, Download, Crown, Check, Loader2, X } from "lucide-react";
 import { Sidebar } from "@/components/layout/sidebar";
+import { MobileNavProvider } from "@/components/layout/mobile-nav-context";
 import { Header } from "@/components/layout/header";
 import { AuthGuard } from "@/components/auth/auth-guard";
 import { useAuthStore } from "@/lib/auth";
@@ -123,10 +124,11 @@ export default function SettingsPage() {
   const isPremium = user?.subscription_tier === "premium";
 
   return (
+    <MobileNavProvider>
     <AuthGuard>
       <div className="flex h-screen bg-background">
         <Sidebar />
-        <div className="flex-1 ml-[260px] flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden">
           <Header
             title="Einstellungen"
             subtitle="Verwalten Sie Ihr Profil und Ihre Praeferenzen"
@@ -373,5 +375,6 @@ export default function SettingsPage() {
         </div>
       </div>
     </AuthGuard>
+    </MobileNavProvider>
   );
 }

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { MessageSquare, CheckCircle, XCircle, Clock, Send } from "lucide-react";
 import { Sidebar } from "@/components/layout/sidebar";
+import { MobileNavProvider } from "@/components/layout/mobile-nav-context";
 import { Header } from "@/components/layout/header";
 import { AuthGuard } from "@/components/auth/auth-guard";
 import api from "@/lib/api";
@@ -45,10 +46,11 @@ export default function AdminFeedbackPage() {
   };
 
   return (
+    <MobileNavProvider>
     <AuthGuard adminOnly>
       <div className="flex h-screen bg-background">
         <Sidebar />
-        <div className="flex-1 ml-[260px] flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden">
           <Header title="Feedback verwalten" subtitle="Kundenfeedback einsehen und beantworten" />
           <main className="flex-1 overflow-y-auto p-6">
             {/* Filter tabs */}
@@ -162,5 +164,6 @@ export default function AdminFeedbackPage() {
         </div>
       )}
     </AuthGuard>
+    </MobileNavProvider>
   );
 }

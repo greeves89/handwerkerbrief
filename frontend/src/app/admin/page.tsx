@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Users, FileText, TrendingUp, MessageSquare, Shield } from "lucide-react";
 import Link from "next/link";
 import { Sidebar } from "@/components/layout/sidebar";
+import { MobileNavProvider } from "@/components/layout/mobile-nav-context";
 import { Header } from "@/components/layout/header";
 import { AuthGuard } from "@/components/auth/auth-guard";
 import { StatsCard } from "@/components/dashboard/stats-card";
@@ -24,10 +25,11 @@ export default function AdminPage() {
   }, []);
 
   return (
+    <MobileNavProvider>
     <AuthGuard adminOnly>
       <div className="flex h-screen bg-background">
         <Sidebar />
-        <div className="flex-1 ml-[260px] flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden">
           <Header title="Admin Dashboard" subtitle="System-Uebersicht und Verwaltung" />
           <main className="flex-1 overflow-y-auto p-6 space-y-6">
             {isLoading ? (
@@ -92,5 +94,6 @@ export default function AdminPage() {
         </div>
       </div>
     </AuthGuard>
+    </MobileNavProvider>
   );
 }

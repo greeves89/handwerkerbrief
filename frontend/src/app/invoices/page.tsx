@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Plus, Receipt, Crown, Zap } from "lucide-react";
 import Link from "next/link";
 import { Sidebar } from "@/components/layout/sidebar";
+import { MobileNavProvider } from "@/components/layout/mobile-nav-context";
 import { Header } from "@/components/layout/header";
 import { AuthGuard } from "@/components/auth/auth-guard";
 import { DocumentList } from "@/components/documents/document-list";
@@ -34,10 +35,11 @@ export default function InvoicesPage() {
   };
 
   return (
+    <MobileNavProvider>
     <AuthGuard>
       <div className="flex h-screen bg-background">
         <Sidebar />
-        <div className="flex-1 ml-[260px] flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden">
           <Header
             title="Rechnungen"
             subtitle={`${documents.length} Rechnungen`}
@@ -122,5 +124,6 @@ export default function InvoicesPage() {
         />
       )}
     </AuthGuard>
+    </MobileNavProvider>
   );
 }

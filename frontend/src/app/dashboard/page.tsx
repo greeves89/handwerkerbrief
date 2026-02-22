@@ -11,6 +11,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { Sidebar } from "@/components/layout/sidebar";
+import { MobileNavProvider } from "@/components/layout/mobile-nav-context";
 import { Header } from "@/components/layout/header";
 import { AuthGuard } from "@/components/auth/auth-guard";
 import { StatsCard } from "@/components/dashboard/stats-card";
@@ -120,10 +121,11 @@ export default function DashboardPage() {
   }, []);
 
   return (
+    <MobileNavProvider>
     <AuthGuard>
       <div className="flex h-screen bg-background">
         <Sidebar />
-        <div className="flex-1 ml-[260px] flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden">
           <Header
             title={`Guten Tag, ${user?.name?.split(" ")[0]} !`}
             subtitle="Hier ist eine Uebersicht Ihrer Aktivitaeten"
@@ -244,5 +246,6 @@ export default function DashboardPage() {
         </div>
       </div>
     </AuthGuard>
+    </MobileNavProvider>
   );
 }

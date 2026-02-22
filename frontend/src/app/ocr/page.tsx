@@ -17,6 +17,7 @@ import {
   X,
 } from "lucide-react";
 import { Sidebar } from "@/components/layout/sidebar";
+import { MobileNavProvider } from "@/components/layout/mobile-nav-context";
 import { Header } from "@/components/layout/header";
 import { AuthGuard } from "@/components/auth/auth-guard";
 import { ocrApi } from "@/lib/api";
@@ -104,11 +105,12 @@ export default function OcrPage() {
   ].filter((f) => f.value !== undefined);
 
   return (
+    <MobileNavProvider>
     <AuthGuard>
       <div className="flex h-screen bg-background">
         <Sidebar />
 
-        <div className="flex-1 ml-[260px] flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden">
           <Header
             title="Belegscanner"
             subtitle="Eingangsrechnung hochladen – Felder werden automatisch erkannt"
@@ -262,5 +264,6 @@ export default function OcrPage() {
         </div>
       </div>
     </AuthGuard>
+    </MobileNavProvider>
   );
 }

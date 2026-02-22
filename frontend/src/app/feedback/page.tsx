@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { MessageSquare, Plus, CheckCircle, XCircle, Clock } from "lucide-react";
 import { Sidebar } from "@/components/layout/sidebar";
+import { MobileNavProvider } from "@/components/layout/mobile-nav-context";
 import { Header } from "@/components/layout/header";
 import { AuthGuard } from "@/components/auth/auth-guard";
 import { FeedbackForm } from "@/components/feedback/feedback-form";
@@ -42,10 +43,11 @@ export default function FeedbackPage() {
   };
 
   return (
+    <MobileNavProvider>
     <AuthGuard>
       <div className="flex h-screen bg-background">
         <Sidebar />
-        <div className="flex-1 ml-[260px] flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden">
           <Header
             title="Feedback"
             subtitle="Teilen Sie Ihre Meinung und Verbesserungsvorschlaege"
@@ -121,5 +123,6 @@ export default function FeedbackPage() {
         <FeedbackForm onSave={handleSave} onCancel={() => setShowForm(false)} />
       )}
     </AuthGuard>
+    </MobileNavProvider>
   );
 }
