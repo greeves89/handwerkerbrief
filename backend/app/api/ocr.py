@@ -11,6 +11,7 @@ Verarbeitet hochgeladene PDFs und Bilder, extrahiert automatisch:
 Für PDFs: Text-Extraktion via pypdf (funktioniert für text-based PDFs).
 Für gescannte/Bild-PDFs und Images: Hinweis für manuelle Eingabe.
 """
+import asyncio
 import io
 import os
 import re
@@ -180,14 +181,18 @@ async def scan_document(
 
     fields = extract_fields(text) if text_found else {}
 
-    # Save uploaded file for reference
+    # Save uploaded file for reference (in thread pool to avoid blocking the event loop)
     upload_subdir = os.path.join(settings.UPLOAD_DIR, "ocr_uploads", str(current_user.id))
     os.makedirs(upload_subdir, exist_ok=True)
     ext = ".pdf" if content_type == "application/pdf" else ".jpg"
     filename = f"{uuid.uuid4()}{ext}"
     filepath = os.path.join(upload_subdir, filename)
-    with open(filepath, "wb") as f:
-        f.write(content)
+
+    def _write_file() -> None:
+        with open(filepath, "wb") as f:
+            f.write(content)
+
+    await asyncio.to_thread(_write_file)
 
     relative_path = os.path.join("ocr_uploads", str(current_user.id), filename)
 
