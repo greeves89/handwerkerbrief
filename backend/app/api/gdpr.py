@@ -131,6 +131,6 @@ async def delete_my_account(
 
     from fastapi import Response
     response = JSONResponse({"message": "Ihr Konto wurde vollständig gelöscht"})
-    response.delete_cookie("access_token")
-    response.delete_cookie("refresh_token")
+    response.delete_cookie("hb_access_token")
+    response.delete_cookie("hb_refresh_token")
     return response
