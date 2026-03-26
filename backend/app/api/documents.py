@@ -27,8 +27,8 @@ FREE_TIER_MONTHLY_LIMIT = 3
 async def check_monthly_limit(user: User, doc_type: str, db: AsyncSession):
     if user.subscription_tier == "premium":
         return
-    from datetime import datetime
-    now = datetime.utcnow()
+    from datetime import datetime, timezone
+    now = datetime.now(timezone.utc)
     month_start = datetime(now.year, now.month, 1)
     result = await db.execute(
         select(func.count(Document.id)).where(
@@ -547,13 +547,13 @@ async def send_payment_reminder(
         raise HTTPException(status_code=400, detail="Kunde hat keine E-Mail-Adresse")
 
     level = data.get("level", 1)
-    from datetime import datetime
+    from datetime import datetime, timezone
     reminder = PaymentReminder(
         document_id=doc.id,
         level=level,
         amount=doc.total_amount,
         status="sent",
-        sent_at=datetime.utcnow(),
+        sent_at=datetime.now(timezone.utc),
     )
     db.add(reminder)
 

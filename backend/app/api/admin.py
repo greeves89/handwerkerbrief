@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from sqlalchemy.orm import selectinload
 from typing import List, Optional
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from app.database import get_db
 from app.models.user import User
@@ -131,7 +131,7 @@ async def update_subscription(
     user.subscription_tier = tier
     if tier == "premium":
         months = data.get("months", 1)
-        user.subscription_expires_at = datetime.utcnow() + timedelta(days=30 * months)
+        user.subscription_expires_at = datetime.now(timezone.utc) + timedelta(days=30 * months)
     else:
         user.subscription_expires_at = None
 

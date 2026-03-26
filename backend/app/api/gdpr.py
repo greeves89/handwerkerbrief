@@ -1,4 +1,5 @@
 import json
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse, StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -102,7 +103,7 @@ async def export_my_data(
         "customers": customers,
         "documents": documents,
         "feedback": feedbacks,
-        "exported_at": str(__import__("datetime").datetime.utcnow()),
+        "exported_at": str(__import__("datetime").datetime.now(__import__("datetime").timezone.utc)),
     }
 
     json_bytes = json.dumps(export_data, ensure_ascii=False, indent=2).encode("utf-8")

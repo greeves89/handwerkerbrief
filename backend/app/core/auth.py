@@ -45,13 +45,13 @@ async def get_current_admin(current_user: User = Depends(get_current_user)) -> U
 
 
 async def get_premium_user(current_user: User = Depends(get_current_user)) -> User:
-    from datetime import datetime
+    from datetime import datetime, timezone
     if current_user.subscription_tier == "free":
         raise HTTPException(
             status_code=status.HTTP_402_PAYMENT_REQUIRED,
             detail="Premium-Abonnement erforderlich",
         )
-    if current_user.subscription_expires_at and current_user.subscription_expires_at < datetime.utcnow():
+    if current_user.subscription_expires_at and current_user.subscription_expires_at < datetime.now(timezone.utc):
         raise HTTPException(
             status_code=status.HTTP_402_PAYMENT_REQUIRED,
             detail="Ihr Premium-Abonnement ist abgelaufen",
