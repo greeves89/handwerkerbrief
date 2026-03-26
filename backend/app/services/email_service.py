@@ -2,7 +2,7 @@ import aiosmtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, timezone
 from app.config import settings
 import logging
 
@@ -25,7 +25,7 @@ FONT           = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,A
 
 
 def _email_wrapper(content: str, app_name: str = "HandwerkerBrief", tagline: str = "Rechnungen & Angebote für Handwerker") -> str:
-    year = datetime.now().year
+    year = datetime.now(timezone.utc).year
     return f"""<!DOCTYPE html>
 <html lang="de">
 <head>
