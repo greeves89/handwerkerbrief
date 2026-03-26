@@ -103,7 +103,7 @@ async def export_my_data(
         "customers": customers,
         "documents": documents,
         "feedback": feedbacks,
-        "exported_at": str(__import__("datetime").datetime.now(__import__("datetime").timezone.utc)),
+        "exported_at": str(datetime.now(timezone.utc)),
     }
 
     json_bytes = json.dumps(export_data, ensure_ascii=False, indent=2).encode("utf-8")

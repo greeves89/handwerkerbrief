@@ -1,8 +1,11 @@
+import logging
 import os
 import uuid
 from decimal import Decimal
 from typing import Optional
 from datetime import date
+
+logger = logging.getLogger(__name__)
 
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
@@ -94,7 +97,8 @@ async def generate_pdf(document, user, customer) -> str:
             try:
                 img = Image(logo_full, width=40*mm, height=20*mm, kind='proportional')
                 logo_cell = img
-            except Exception:
+            except Exception as e:
+                logger.error(f"Failed to load logo image: {e}")
                 logo_cell = Paragraph(company_name, style_heading)
         else:
             logo_cell = Paragraph(company_name, style_heading)

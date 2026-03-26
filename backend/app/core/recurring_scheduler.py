@@ -124,8 +124,8 @@ async def create_due_recurring_invoices():
                 )
 
             await db.commit()
-        except Exception:
-            logger.exception("Recurring scheduler error")
+        except Exception as e:
+            logger.exception("Recurring scheduler error: %s", e)
             await db.rollback()
 
 
