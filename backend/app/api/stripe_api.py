@@ -1,5 +1,8 @@
+import logging
 import stripe
 from fastapi import APIRouter, Depends, HTTPException, Request, Header
+
+logger = logging.getLogger(__name__)
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from typing import Optional
@@ -119,14 +122,11 @@ async def stripe_webhook(
             await db.commit()
 
     elif event["type"] == "invoice.payment_failed":
+        # Only log — Stripe retries payments automatically.
+        # Downgrade happens on customer.subscription.deleted, not on first failure.
         invoice = event["data"]["object"]
         customer_id = invoice.get("customer")
-
-        result = await db.execute(select(User).where(User.stripe_customer_id == customer_id))
-        user = result.scalar_one_or_none()
-        if user:
-            user.subscription_tier = "free"
-            await db.commit()
+        logger.warning("Payment failed for customer %s", customer_id)
 
     return {"status": "ok"}
 
