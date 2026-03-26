@@ -13,10 +13,13 @@ Für gescannte/Bild-PDFs und Images: Hinweis für manuelle Eingabe.
 """
 import asyncio
 import io
+import logging
 import os
 import re
 import uuid
 from typing import Optional
+
+logger = logging.getLogger(__name__)
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -43,6 +46,7 @@ def extract_text_from_pdf(content: bytes) -> str:
                 texts.append(t)
         return "\n".join(texts)
     except Exception:
+        logger.warning("Failed to extract text from PDF", exc_info=True)
         return ""
 
 

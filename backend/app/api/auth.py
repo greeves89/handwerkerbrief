@@ -1,8 +1,10 @@
 import logging
+import time
+from collections import defaultdict
 
 logger = logging.getLogger(__name__)
 
-from fastapi import APIRouter, Depends, HTTPException, status, Response, Cookie
+from fastapi import APIRouter, Depends, HTTPException, Request, status, Response, Cookie
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from typing import Optional
@@ -22,6 +24,26 @@ from app.services.email_service import (
 )
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
+
+# --- In-memory rate limiting ---
+_rate_limit_store: dict[str, list[float]] = defaultdict(list)
+RATE_LIMIT_WINDOW = 300  # 5 minutes
+RATE_LIMIT_MAX = 10  # max requests per window
+
+
+def _check_rate_limit(key: str) -> None:
+    """Raise HTTP 429 if key exceeds RATE_LIMIT_MAX requests in the window."""
+    now = time.monotonic()
+    timestamps = _rate_limit_store[key]
+    # Prune old entries
+    _rate_limit_store[key] = [t for t in timestamps if now - t < RATE_LIMIT_WINDOW]
+    if len(_rate_limit_store[key]) >= RATE_LIMIT_MAX:
+        raise HTTPException(
+            status_code=429,
+            detail="Zu viele Anfragen – bitte warten Sie einige Minuten.",
+        )
+    _rate_limit_store[key].append(now)
+
 
 COOKIE_SETTINGS = {
     "httponly": True,
@@ -89,9 +111,11 @@ async def register(
 @router.post("/login", response_model=UserResponse)
 async def login(
     data: LoginRequest,
+    request: Request,
     response: Response,
     db: AsyncSession = Depends(get_db),
 ):
+    _check_rate_limit(f"login:{request.client.host}")
     result = await db.execute(select(User).where(User.email == data.email.lower()))
     user = result.scalar_one_or_none()
 
@@ -170,7 +194,8 @@ async def verify_email(token: str, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/resend-verification")
-async def resend_verification(data: dict, db: AsyncSession = Depends(get_db)):
+async def resend_verification(data: dict, request: Request, db: AsyncSession = Depends(get_db)):
+    _check_rate_limit(f"resend:{request.client.host}")
     email = data.get("email", "").lower()
     result = await db.execute(select(User).where(User.email == email))
     user = result.scalar_one_or_none()
@@ -192,7 +217,8 @@ async def resend_verification(data: dict, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/forgot-password")
-async def forgot_password(data: dict, db: AsyncSession = Depends(get_db)):
+async def forgot_password(data: dict, request: Request, db: AsyncSession = Depends(get_db)):
+    _check_rate_limit(f"forgot:{request.client.host}")
     email = data.get("email", "").lower()
     result = await db.execute(select(User).where(User.email == email))
     user = result.scalar_one_or_none()
@@ -214,7 +240,8 @@ async def forgot_password(data: dict, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/reset-password")
-async def reset_password(data: dict, db: AsyncSession = Depends(get_db)):
+async def reset_password(data: dict, request: Request, db: AsyncSession = Depends(get_db)):
+    _check_rate_limit(f"reset:{request.client.host}")
     token = data.get("token", "")
     new_password = data.get("new_password", "")
 
