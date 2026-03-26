@@ -310,6 +310,9 @@ async def download_pdf(
         await db.commit()
 
     full_path = os.path.join(settings.UPLOAD_DIR, doc.pdf_path)
+    resolved = os.path.realpath(full_path)
+    if not resolved.startswith(os.path.realpath(settings.UPLOAD_DIR)):
+        raise HTTPException(status_code=404, detail="Datei nicht gefunden")
     return FileResponse(
         full_path,
         media_type="application/pdf",

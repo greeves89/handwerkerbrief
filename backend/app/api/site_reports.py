@@ -285,6 +285,9 @@ async def upload_photo(
     os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
 
     content = await file.read()
+    MAX_PHOTO_SIZE = 10 * 1024 * 1024  # 10 MB
+    if len(content) > MAX_PHOTO_SIZE:
+        raise HTTPException(status_code=413, detail="Datei zu groß. Maximale Größe: 10 MB")
     with open(upload_path, "wb") as f:
         f.write(content)
 

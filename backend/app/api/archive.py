@@ -334,6 +334,9 @@ async def download_entry(
         raise HTTPException(status_code=404, detail="Archiveintrag nicht gefunden")
 
     file_path = os.path.join(settings.UPLOAD_DIR, entry.filename)
+    resolved = os.path.realpath(file_path)
+    if not resolved.startswith(os.path.realpath(settings.UPLOAD_DIR)):
+        raise HTTPException(status_code=404, detail="Datei nicht gefunden")
     if not os.path.exists(file_path):
         raise HTTPException(status_code=404, detail="Datei nicht mehr auf dem Server vorhanden")
 
