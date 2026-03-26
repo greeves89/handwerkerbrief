@@ -34,9 +34,9 @@ app = FastAPI(
     title="HandwerkerBrief API",
     description="Invoicing and offer management for German craftsmen",
     version="1.0.0",
-    docs_url="/api/docs",
-    redoc_url="/api/redoc",
-    openapi_url="/api/openapi.json",
+    docs_url="/api/docs" if settings.ENVIRONMENT != "production" else None,
+    redoc_url="/api/redoc" if settings.ENVIRONMENT != "production" else None,
+    openapi_url="/api/openapi.json" if settings.ENVIRONMENT != "production" else None,
     lifespan=lifespan,
 )
 
