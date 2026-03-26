@@ -230,8 +230,8 @@ async def update_document(
             new_items.append(type('Item', (), {'quantity': Decimal(str(item_data["quantity"])), 'price_per_unit': Decimal(str(item_data["price_per_unit"]))})())
 
         # Recalculate totals
-        tax_rate = data.tax_rate or doc.tax_rate
-        discount_percent = data.discount_percent or doc.discount_percent
+        tax_rate = data.tax_rate if data.tax_rate is not None else doc.tax_rate
+        discount_percent = data.discount_percent if data.discount_percent is not None else doc.discount_percent
         subtotal, tax_amount, total_amount = calculate_totals(new_items, tax_rate, discount_percent)
         doc.subtotal = subtotal
         doc.tax_amount = tax_amount
