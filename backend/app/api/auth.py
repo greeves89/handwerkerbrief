@@ -1,3 +1,7 @@
+import logging
+
+logger = logging.getLogger(__name__)
+
 from fastapi import APIRouter, Depends, HTTPException, status, Response, Cookie
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
@@ -71,8 +75,8 @@ async def register(
     try:
         html, text = build_verification_email(user.name, verify_url)
         await send_email(user.email, "E-Mail verifizieren – HandwerkerBrief", html, text)
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning("Email send failed: %s", e)
 
     # Auto-login after registration (verified check skipped on first login)
     access_token = create_access_token({"sub": str(user.id), "role": user.role})
@@ -181,8 +185,8 @@ async def resend_verification(data: dict, db: AsyncSession = Depends(get_db)):
         try:
             html, text = build_verification_email(user.name, verify_url)
             await send_email(user.email, "E-Mail verifizieren – HandwerkerBrief", html, text)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("Email send failed: %s", e)
 
     return {"message": "Falls ein unverifiziertes Konto existiert, wurde die E-Mail erneut gesendet."}
 
@@ -203,8 +207,8 @@ async def forgot_password(data: dict, db: AsyncSession = Depends(get_db)):
         try:
             html, text = build_password_reset_email(user.name, reset_url)
             await send_email(user.email, "Passwort zurücksetzen – HandwerkerBrief", html, text)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("Email send failed: %s", e)
 
     return {"message": "Falls ein Konto mit dieser E-Mail existiert, wurde eine E-Mail gesendet."}
 
